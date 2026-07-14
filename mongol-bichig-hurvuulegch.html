@@ -1001,9 +1001,14 @@ const LETTERHEAD_CONFIG = {
     }
   }
 };
+// АНХААРАХ: Downloads/А4.png, А5.png, Захирамжлал.png зургууд нь ЖИНХЭНЭ хоосон бланк
+// БИШ, харин өөр tool-ын засварлагчийн дэлгэцний зураг (аль хэдийн жишээ текст
+// шатсан) байсан нь тест хийхэд тогтоогдов — эдгээрийг дэвсгэр болгож ашиглавал бидний
+// шинэ текст хуучин жишээ текст дээр давхарлаж бөөгнөрдөг тул ЗӨВХӨН CSS-ээр дуурайлгасан
+// хувилбарыг ашиглана (доорх letterheadConfigFor үргэлж null буцаана — идэвхгүй болгов).
+// Хэрэв цаашид хэрэглэгч ЖИНХЭНЭ хоосон (текстгүй) бланкны scan/зураг өгвөл энд буцааж
+// идэвхжүүлж болно.
 function letterheadConfigFor(cat, paperKey){
-  if (cat === 'albanbichig') return LETTERHEAD_CONFIG[paperKey === 'A5' ? 'A5_albanbichig' : 'A4_albanbichig'];
-  if (cat === 'zahiramjlal') return LETTERHEAD_CONFIG.zahiramjlal;
   return null;
 }
 
