@@ -170,6 +170,7 @@
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -182,6 +183,7 @@
     <input type="password" id="loginPassword" placeholder="Нууц үг" style="width:100%;padding:10px 12px;margin-bottom:14px;border:1px solid #dfe4ea;border-radius:8px;font-size:14px;box-sizing:border-box;">
     <button id="loginBtn" style="width:100%;background:#1a5fb4;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;">Нэвтрэх</button>
     <div id="loginError" style="margin-top:12px;font-size:13px;color:#b3261e;display:none;"></div>
+    <div id="loginBlocked" style="margin-top:12px;font-size:13px;color:#b3261e;display:none;">Таны хандах эрх идэвхгүй болсон эсвэл бүртгэлгүй байна. Админтай холбогдоно уу.</div>
     <div id="loginLoading" style="margin-top:12px;font-size:13px;color:#667085;display:none;">Шалгаж байна...</div>
   </div>
 </div>
@@ -192,11 +194,27 @@
     <h1 style="margin:0;">Кирилл → Монгол бичиг хөрвүүлэгч</h1>
     <div style="font-size:13px;color:#667085;display:flex;align-items:center;gap:10px;">
       <span id="loggedInEmail"></span>
+      <button id="adminToggleBtn" class="secondary" style="padding:6px 12px;font-size:12.5px;display:none;">⚙ Админы тохиргоо</button>
       <button id="logoutBtn" class="secondary" style="padding:6px 12px;font-size:12.5px;">Гарах</button>
     </div>
   </div>
+
+  <!-- ============ АДМИНЫ САМБАР (зөвхөн админд харагдана) ============ -->
+  <div id="adminPanel" style="display:none;background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:12px;">
+    <h2 style="font-size:15px;margin:0 0 12px;color:var(--blue-dark);">Админы тохиргоо — хэрэглэгчийн эрх удирдах</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <input type="email" id="newUserEmail" placeholder="Шинэ хэрэглэгчийн и-мэйл" style="flex:1;min-width:200px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;">
+      <input type="text" id="newUserPassword" placeholder="Нууц үг (6+ тэмдэгт)" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;">
+      <button id="addUserBtn" style="padding:9px 16px;">+ Хэрэглэгч нэмэх</button>
+    </div>
+    <div id="adminMsg" style="font-size:13px;margin-bottom:10px;display:none;"></div>
+    <div id="usersListBox" style="font-size:13.5px;">
+      <div style="color:var(--muted);">Ачааллаж байна...</div>
+    </div>
+  </div>
+
   <div style="background:#fff3cd;border:2px solid #e6a700;border-radius:8px;padding:8px 14px;margin-bottom:12px;margin-top:10px;font-size:13px;font-weight:700;color:#7a5200;">
-    ⚙️ ХУВИЛБАР: v31 — 2026-07-14 (Firebase Authentication нэвтрэх систем нэмэгдсэн). ⚠️ ЗААВАЛ: A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx загвар файлуудыг энэ html-тэй ИЖИЛ хавтсанд байрлуулж, ВЕБ СЕРВЕРЭЭР үзэх шаардлагатай (local file:// дээр fetch() ажиллахгүй). Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
+    ⚙️ ХУВИЛБАР: v32 — 2026-07-14 (Вэб доторх Админы самбар нэмэгдсэн — хэрэглэгч нэмэх/идэвхгүй болгох/устгах). ⚠️ ЗААВАЛ: A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx загвар файлуудыг энэ html-тэй ИЖИЛ хавтсанд байрлуулж, ВЕБ СЕРВЕРЭЭР үзэх шаардлагатай (local file:// дээр fetch() ажиллахгүй). Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
   </div>
   <p class="subtitle">Кирилл бичгээр текст оруулаад, байгууллагын бланк дээр байрлуулсан бэлэн Word (.doc) файл татаж авна. Хөрвүүлэлт нь ~23,000 үгтэй толь бичигт (toli.query.mn) суурилсан тул түүхэн зөв бичлэгтэй илүү нийцтэй.</p>
 
@@ -382,27 +400,65 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Зөвхөн энэ и-мэйлтэй хэрэглэгч Админы самбарыг харна.
+const ADMIN_EMAIL = 'basjargalzoljargal@gmail.com';
 
 auth.onAuthStateChanged(function(user){
   const gate = document.getElementById('loginGate');
   const app = document.getElementById('appContent');
   const emailSpan = document.getElementById('loggedInEmail');
-  if (user){
+  const loadEl = document.getElementById('loginLoading');
+  const blockedEl = document.getElementById('loginBlocked');
+  const adminBtn = document.getElementById('adminToggleBtn');
+
+  if (!user){
+    gate.style.display = 'flex';
+    app.style.display = 'none';
+    if (adminBtn) adminBtn.style.display = 'none';
+    return;
+  }
+
+  if (user.email === ADMIN_EMAIL){
+    if (loadEl) loadEl.style.display = 'none';
     gate.style.display = 'none';
     app.style.display = 'block';
     if (emailSpan) emailSpan.textContent = user.email;
-  } else {
-    gate.style.display = 'flex';
-    app.style.display = 'none';
+    if (adminBtn) adminBtn.style.display = 'inline-block';
+    return;
   }
+
+  // Админ биш хэрэглэгчийн хувьд Firestore-с идэвхтэй эсэхийг шалгана.
+  db.collection('users').doc(user.uid).get().then(function(doc){
+    if (doc.exists && doc.data().active === true){
+      if (loadEl) loadEl.style.display = 'none';
+      gate.style.display = 'none';
+      app.style.display = 'block';
+      if (emailSpan) emailSpan.textContent = user.email;
+      if (adminBtn) adminBtn.style.display = 'none';
+    } else {
+      auth.signOut().then(function(){
+        if (loadEl) loadEl.style.display = 'none';
+        if (blockedEl) blockedEl.style.display = 'block';
+      });
+    }
+  }).catch(function(){
+    auth.signOut().then(function(){
+      if (loadEl) loadEl.style.display = 'none';
+      if (blockedEl) blockedEl.style.display = 'block';
+    });
+  });
 });
 
 function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const errEl = document.getElementById('loginError');
+  const blockedEl = document.getElementById('loginBlocked');
   const loadEl = document.getElementById('loginLoading');
   errEl.style.display = 'none';
+  blockedEl.style.display = 'none';
   if (!email || !password){
     errEl.textContent = 'И-мэйл болон нууц үгээ оруулна уу.';
     errEl.style.display = 'block';
@@ -425,13 +481,126 @@ function doLogin(){
     });
 }
 
+// ===== Админы самбар: хэрэглэгч нэмэх/идэвхгүй болгох/устгах =====
+function showAdminMsg(text, isError){
+  const el = document.getElementById('adminMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isError ? '#b3261e' : '#0f7a3d';
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 5000);
+}
+
+function loadUsersList(){
+  const box = document.getElementById('usersListBox');
+  if (!box) return;
+  box.innerHTML = '<div style="color:var(--muted);">Ачааллаж байна...</div>';
+  db.collection('users').orderBy('createdAt', 'desc').get().then(function(snap){
+    if (snap.empty){
+      box.innerHTML = '<div style="color:var(--muted);">Хэрэглэгч байхгүй байна. Дээрх талбараар нэмнэ үү.</div>';
+      return;
+    }
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:13.5px;">';
+    html += '<tr style="text-align:left;border-bottom:1px solid var(--border);"><th style="padding:6px 4px;">И-мэйл</th><th style="padding:6px 4px;">Төлөв</th><th style="padding:6px 4px;">Үйлдэл</th></tr>';
+    snap.forEach(function(doc){
+      const d = doc.data();
+      const uid = doc.id;
+      const active = d.active === true;
+      html += '<tr style="border-bottom:1px solid var(--border);">';
+      html += '<td style="padding:6px 4px;">' + (d.email || '(имэйлгүй)') + '</td>';
+      html += '<td style="padding:6px 4px;">' + (active ? '<span style="color:#0f7a3d;font-weight:600;">Идэвхтэй</span>' : '<span style="color:#b3261e;font-weight:600;">Идэвхгүй</span>') + '</td>';
+      html += '<td style="padding:6px 4px;white-space:nowrap;">';
+      html += '<button class="secondary" style="padding:5px 10px;font-size:12px;margin-right:6px;" onclick="toggleUserActive(\'' + uid + '\', ' + active + ')">' + (active ? 'Зогсоох' : 'Идэвхжүүлэх') + '</button>';
+      html += '<button class="secondary" style="padding:5px 10px;font-size:12px;color:#b3261e;" onclick="deleteUserRecord(\'' + uid + '\', \'' + (d.email || '') + '\')">Устгах</button>';
+      html += '</td></tr>';
+    });
+    html += '</table>';
+    box.innerHTML = html;
+  }).catch(function(err){
+    box.innerHTML = '<div style="color:#b3261e;">Ачаалахад алдаа гарлаа: ' + err.message + '</div>';
+  });
+}
+
+function addNewUser(){
+  const emailEl = document.getElementById('newUserEmail');
+  const pwEl = document.getElementById('newUserPassword');
+  const email = emailEl.value.trim();
+  const password = pwEl.value;
+  if (!email || !password){
+    showAdminMsg('И-мэйл болон нууц үгээ оруулна уу.', true);
+    return;
+  }
+  if (password.length < 6){
+    showAdminMsg('Нууц үг дор хаяж 6 тэмдэгт байх ёстой.', true);
+    return;
+  }
+  // Шинэ хэрэглэгч үүсгэхдээ АДМИНЫ өөрийнх нь нэвтэрсэн session-г салгахгүйн тулд
+  // тусдаа (secondary) Firebase App instance ашиглана.
+  const secondaryApp = firebase.initializeApp(firebaseConfig, 'Secondary_' + Date.now());
+  secondaryApp.auth().createUserWithEmailAndPassword(email, password)
+    .then(function(cred){
+      const newUid = cred.user.uid;
+      return secondaryApp.auth().signOut().then(function(){
+        return db.collection('users').doc(newUid).set({
+          email: email,
+          active: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+    })
+    .then(function(){
+      secondaryApp.delete();
+      emailEl.value = '';
+      pwEl.value = '';
+      showAdminMsg('Хэрэглэгч амжилттай нэмэгдлээ: ' + email, false);
+      loadUsersList();
+    })
+    .catch(function(error){
+      secondaryApp.delete().catch(function(){});
+      let msg = 'Алдаа гарлаа: ' + error.message;
+      if (error.code === 'auth/email-already-in-use'){
+        msg = 'Энэ и-мэйл хаяг аль хэдийн бүртгэлтэй байна.';
+      } else if (error.code === 'auth/invalid-email'){
+        msg = 'И-мэйл хаяг буруу байна.';
+      } else if (error.code === 'auth/weak-password'){
+        msg = 'Нууц үг хэт энгийн байна.';
+      }
+      showAdminMsg(msg, true);
+    });
+}
+
+function toggleUserActive(uid, currentActive){
+  db.collection('users').doc(uid).update({ active: !currentActive })
+    .then(function(){ loadUsersList(); })
+    .catch(function(err){ showAdminMsg('Алдаа гарлаа: ' + err.message, true); });
+}
+
+function deleteUserRecord(uid, email){
+  if (!confirm((email || 'энэ хэрэглэгч') + '-ийн хандах эрхийг бүрмөсөн цуцлах уу?')) return;
+  db.collection('users').doc(uid).delete()
+    .then(function(){
+      showAdminMsg('Хэрэглэгчийн хандах эрхийг цуцаллаа: ' + email, false);
+      loadUsersList();
+    })
+    .catch(function(err){ showAdminMsg('Алдаа гарлаа: ' + err.message, true); });
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   const pwField = document.getElementById('loginPassword');
+  const adminToggleBtn = document.getElementById('adminToggleBtn');
+  const addUserBtn = document.getElementById('addUserBtn');
   if (btn) btn.addEventListener('click', doLogin);
   if (pwField) pwField.addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); });
   if (logoutBtn) logoutBtn.addEventListener('click', function(){ auth.signOut(); });
+  if (addUserBtn) addUserBtn.addEventListener('click', addNewUser);
+  if (adminToggleBtn) adminToggleBtn.addEventListener('click', function(){
+    const panel = document.getElementById('adminPanel');
+    const isHidden = panel.style.display === 'none' || !panel.style.display;
+    panel.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) loadUsersList();
+  });
 });
 
 // ===== Зөв бичгийн алдаа шалгагч =====
