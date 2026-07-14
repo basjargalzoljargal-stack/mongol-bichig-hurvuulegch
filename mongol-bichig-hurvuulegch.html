@@ -1174,7 +1174,7 @@ function printPreview(){
   const contentTop = mT, contentLeft = mL, contentRight = base.width - mR, contentBottom = base.height - mB;
   const usableHeightMm = Math.max(0, contentBottom - contentTop);
 
-  const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml() : { cols: [] };
+  const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml(true) : { cols: [] };
   const cols = sidebar.cols || [];
   let innerHtml = '';
   let curLeftMm = contentLeft;
@@ -1322,9 +1322,15 @@ function letterheadPlaceholderHtml(){
   '</div>';
 }
 
-function buildSidebarHtml(){
+// forPrint=true үед: (1) талбарын нэрийг харуулах саарал "[Хэнд хандаж]" гэх мэт тайлбар
+// шошго ("tag") ХАРУУЛАХГҮЙ, (2) лого/байгууллагын нэрийн байрлалыг зөвхөн ДЭЛГЭЦЭНД
+// харуулах улаан тасархай хүрээ + тайлбар текст ("Байгууллагын нэр (хэвлэмэл хуудсан
+// дээр)") ОГТ ХЭВЛЭХГҮЙ (зайг нь л хадгална) — учир нь эдгээр нь ЖИНХЭНЭ хэвлэмэл
+// хуудсан дээр аль хэдийн байгаа тул дахин хэвлэвэл давхарч, будлиулна.
+function buildSidebarHtml(forPrint){
   const cat = document.getElementById('docCategory').value;
-  const tag = (label) => '<div style="font-size:9px;color:#9aa3af;">[' + label + ']</div>';
+  const tag = (label) => forPrint ? '' : ('<div style="font-size:9px;color:#9aa3af;">[' + label + ']</div>');
+  const letterheadHtml = forPrint ? '' : letterheadPlaceholderHtml();
   if (cat === 'zahiramjlal'){
     const orgTitleRaw = document.getElementById('orgTitle').value.trim();
     const docKind = document.getElementById('docKind').value;
@@ -1363,14 +1369,14 @@ function buildSidebarHtml(){
       // эхлэх шугам"=95мм (хуудасны зүүн ирмэгээс) — spacer = зах-75мм, meta-бүс = 75-95мм.
       // ТЭРГҮҮ (subjectRaw) А5 ДЭЭР ОГТ АШИГЛАГДАХГҮЙ — зөвхөн хэнд хандах, голлосон.
       const spacerMm = Math.max(0, 75 - mL);
-      cols.push({ widthMm: spacerMm, html: letterheadPlaceholderHtml() });
+      cols.push({ widthMm: spacerMm, html: letterheadHtml });
       const addresseeHtml = addresseeRaw ? ('<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>') : '';
       if (addresseeHtml) cols.push({ widthMm: 20, html: addresseeHtml });
     } else {
       // А4: MNS 6395:2022 хуудас 7-ын "10" (хэнд хандах) яг тэнхлэг — 2+3-р багана нэгтгэсэн
       // 44мм (24+20) бүсэд байрладаг. Хэнд хандах + тэргүүг НЭГ баганад дараалуулан (хэнд
       // хандах дээр, тэргүү доор), баганын өргөнийг тэр 44мм-ээр авав.
-      cols.push({ widthMm: 37, html: letterheadPlaceholderHtml() });
+      cols.push({ widthMm: 37, html: letterheadHtml });
       let stackedHtml = '';
       if (addresseeRaw) stackedHtml += tag('Хэнд хандаж') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>';
       // MNS 6395:2022 А2 хавсралтын хуудас 7-ын зурган схемийг пиксель хэмжилтээр (10,11
