@@ -115,16 +115,6 @@
     margin:0 1px;
   }
   .placeholder{color:var(--muted);font-size:13px;align-self:center;}
-  /* "Шууд хэвлэх" (window.print()) горим: дэлгэц дээр printArea үргэлж далд, харин хэвлэх
-     мэдэгдэлд (@media print) бусад бүх зүйлийг нуугаад зөвхөн printArea-г бодит мм хэмжээгээр
-     (px биш) харуулна — ингэснээр физик цаасан дээрх байрлал шууд тохирно. */
-  .print-only{display:none;}
-  @media print{
-    body *{visibility:hidden;}
-    #printArea, #printArea *{visibility:visible;}
-    #printArea{display:block !important;position:absolute;left:0;top:0;margin:0;padding:0;}
-    body{padding:0;margin:0;background:#fff;}
-  }
   .upload-row{
     border:1px dashed var(--border);
     border-radius:8px;
@@ -249,11 +239,6 @@
       </div>
     </div>
 
-    <!-- Зөвхөн хэвлэхэд (window.print()) ашиглагдах, бодит мм-хэмжээст хуудас — дэлгэц дээр
-         харагдахгүй (.print-only), гагцхүү @media print үед л screen дээрх бусад бүх зүйлийг
-         нуугаад үүнийг ЯГ ФИЗИК мм хэмжээгээр (px биш) хэвлэнэ. -->
-    <div id="printArea" class="print-only"></div>
-
     <div class="card full">
       <h2>3. Баримт бичгийн тохиргоо</h2>
       <!-- Хэрэглэгчийн шаардсанаар: албан бланкны лого/толгой хэсгийн зураг оруулах боломжийг
@@ -338,15 +323,10 @@
 
       <div class="row">
         <button onclick="downloadDocx()">Word файл татах (.docx)</button>
-        <button onclick="downloadPdf()" style="background:#b3261e;">📄 PDF татах (хэмжээ баталгаатай)</button>
-        <button onclick="printPreview()" style="background:#3a7d3a;">🖨️ Шууд хэвлэх (Preview-ээс)</button>
         <span id="docxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
       </div>
       <div class="note">
-        📄 <b>"PDF татах"</b> — ХАМГИЙН НАЙДВАРТАЙ арга. Энэ товч дэлгэц дээрх Preview-г яг тэр хэвээр нь, А4/А5 хэвтээ хэмжээгээ ФАЙЛ ДОТРОО баталгаатай (browser-ийн хэвлэх цонхны тохиргооноос үл хамааран) PDF болгож татна. Татсан PDF-ээ нээгээд хэвлэхдээ <b>"Бодит хэмжээ / Actual size / 100%"</b> сонгоорой (Fit to page БИШ) — ингэснээр хэвлэмэл хуудсан дээр яг зөв газартаа буух баталгаатай.
-      </div>
-      <div class="note">
-        🖨️ <b>"Шууд хэвлэх"</b> нь browser-ийн window.print()-ийг шууд ашиглана — хурдан, гэхдээ зарим компьютер/принтерийн тохиргоонд Хуудасны хэмжээг (A4/A5 хэвтээ) ГАРААР сонгож өгөхгүй бол буруу (олон хуудсанд хуваагдсан гэх мэт) хэвлэгдэж болзошгүй. Хэвлэх цонх гарахад <b>Хуудасны хэмжээ (Paper size) = A4/A5, Чиглэл = Хэвтээ (Landscape), Зах (Margins) = Байхгүй/Хамгийн бага (None/Minimum), Хэмжээ (Scale) = 100%</b> болгож сонгосон эсэхээ шалгаарай. Асуудал гарвал дээрх "PDF татах" товчийг ашиглана уу.
+        📄 Энэ товч таны бөглөсөн мэдээллийг (Хэнд хандах, Тэргүү, огноо, гол бичвэр г.м) бэлэн Word загвар (.docx) руу шууд шидэж, бүрэн бэлэн, хэвлэхэд бэлэн файл болгож татна. Загвар файл дотор аль хэдийн зөв байрлал, зай тохируулагдсан тул зураг, CSS шаардлагагүй. Татсан Word файлаа нээгээд шууд хэвлэх эсвэл хэвлэмэл хуудсан дээрээ хэвлэж болно.
       </div>
       <div class="note">
         ⚠️ Хөрвүүлэлт нь толь бичиг + үсэг тулгах зарчим хосолсон тул зарим (ялангуяа хувирсан/залгаварт) үг бүрэн 100% нарийвчлал баталгаагүй. Албан бичигт ашиглахын өмнө хянуулахыг зөвлөж байна. Тоо (0-9), латин үсэг, имэйл, %, огноо зэргийг босоо бичгийн урсгал дунд хэвтээгээр, зөв дараалалтай харуулахаар тусад нь тохируулсан (MonScript-ийн үнэгүй хувилбарт тоо алдаж байсан асуудлыг анхаарч). Word дээр нээгдэхэд бичиг зөв харагдахгүй бол "Mongolian Baiti" фонт суулгасан эсэхээ шалгана уу (Windows дээр стандартаар байдаг).
@@ -402,8 +382,6 @@
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.44.0/build/docxtemplater.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ===== Firebase Authentication (нэвтрэх gate) =====
 // АНХААР: энд зөвхөн апп нэрлэлт/түлхүүр (apiKey) байгаа тул нууц биш —
@@ -985,291 +963,17 @@ function convertText(){
   }
 }
 
-// Preview-г Word татахад яг ямар байдлаар хэвлэгдэхтэй аль болох ойролцоо харуулна:
-// бланкны зураг, сонгосон бичгийн ангиллын толгой хэсэг (тэргүү, хэнд хандах г.м), үндсэн бичвэр, footer.
-// Preview-г MNS 6395:2022-ийн мм хэмжээсээр яг тааруулж, position:absolute ашиглан
-// "бланк дээр давхарласан" (overlay) байдлаар зурна — жинхэнэ зурган файл ашиглахгүй
-// (хэрэглэгчийн өгсөн зургууд файл хэлбэрээр программд хүрч чадаагүй тул CSS-ээр дуурайлгав),
-// харин бүх багана/бичвэрийн БАЙРЛАЛ, ХЭМЖЭЭ нь бодит мм-ийн хэмжээсээс ШУУД тооцоологдоно.
-// Word татах үед (downloadDocx()) ЭНЭ функц огт оролцдоггүй — тэнд зөвхөн docxtemplater
-// ашиглан бэлэн .docx загвар руу текст шидэгддэг тул preview-ийн харагдац дур зоргоороо
-// өөрчлөгдсөн ч татагдах файлын бодит байрлалд НӨЛӨӨлөхгүй.
-// Хэрэглэгчийн ӨӨРИЙНХ нь бодит бланкны зурган файлууд (Downloads/А4.png, А5.png,
-// Захирамжлал.png-ээс GitHub руу letterhead-A4.png / letterhead-A5.png /
-// letterhead-Zahiramj.png нэрээр байршуулсан) — эдгээрийг Preview-д ЖИНХЭНЭ дэвсгэр
-// зураг (background-image) болгон ашиглаж, дээр нь хөрвүүлсэн текстийг px-ээр яг
-// тохирсон байрлалд давхарлана. Координатууд нь зургуудыг өөрсдийг нь пиксель-анализ
-// хийж (улаан зураастай лого хайрцаг, цэнхэр/хар бичвэрийн байрлал) олсон утгууд.
-// АНХААР: энэ бол ЗӨВХӨН дэлгэцийн харагдац — Word татах (downloadDocx) функц үүнийг
-// огт ашиглахгүй, зөвхөн docxtemplater-аар текстийг цэвэр загварт шидэж татна.
-const LETTERHEAD_CONFIG = {
-  A4_albanbichig: {
-    img: 'letterhead-A4.png', imgW: 1176, imgH: 826,
-    fields: {
-      addressee: { left: 260, top: 158, width: 150, height: 320, fontSize: 16 },
-      subject:   { left: 260, top: 496, width: 150, height: 280, fontSize: 16 },
-      mainText:  { left: 415, top: 128, width: 715, height: 655, fontSize: 17 }
-    }
-  },
-  A5_albanbichig: {
-    img: 'letterhead-A5.png', imgW: 794, imgH: 561,
-    fields: {
-      addressee: { left: 288, top: 100, width: 140, height: 410, fontSize: 16 },
-      mainText:  { left: 378, top: 90,  width: 384, height: 431, fontSize: 16 }
-    }
-  },
-  zahiramjlal: {
-    img: 'letterhead-Zahiramj.png', imgW: 1180, imgH: 822,
-    fields: {
-      subject:   { left: 233, top: 220, width: 140, height: 460, fontSize: 15 },
-      mainText:  { left: 312, top: 128, width: 828, height: 650, fontSize: 17 }
-    }
-  }
-};
-// АНХААРАХ: Downloads/А4.png, А5.png, Захирамжлал.png зургууд нь ЖИНХЭНЭ хоосон бланк
-// БИШ, харин өөр tool-ын засварлагчийн дэлгэцний зураг (аль хэдийн жишээ текст
-// шатсан) байсан нь тест хийхэд тогтоогдов — эдгээрийг дэвсгэр болгож ашиглавал бидний
-// шинэ текст хуучин жишээ текст дээр давхарлаж бөөгнөрдөг тул ЗӨВХӨН CSS-ээр дуурайлгасан
-// хувилбарыг ашиглана (доорх letterheadConfigFor үргэлж null буцаана — идэвхгүй болгов).
-// Хэрэв цаашид хэрэглэгч ЖИНХЭНЭ хоосон (текстгүй) бланкны scan/зураг өгвөл энд буцааж
-// идэвхжүүлж болно.
-function letterheadConfigFor(cat, paperKey){
-  return null;
-}
-
-// Жинхэнэ бланкны зургийг дэвсгэр болгож, LETTERHEAD_CONFIG-д заасан px-байрлалуудад
-// (уг зургийн байгалийн хэмжээст тааруулсан) хөрвүүлсэн текстийг давхарлана.
-function renderPreviewWithLetterheadImage(cfg){
-  const box = document.getElementById('previewBox');
-  const displayW = 620; // preview-ийн харагдах өргөн (px) — зургийн бодит W-тэй ижил харьцаагаар масштаблана
-  const scale = displayW / cfg.imgW;
-  const displayH = Math.round(cfg.imgH * scale);
-
-  const addresseeRaw = (document.getElementById('addresseeName') || {}).value || '';
-  const subjectRaw = (document.getElementById('docCategory').value === 'zahiramjlal')
-    ? ((document.getElementById('docSubjectZ') || {}).value || '')
-    : ((document.getElementById('docSubject') || {}).value || '');
-
-  let fieldsHtml = '';
-  const f = cfg.fields;
-  function placeField(fieldCfg, html){
-    if (!fieldCfg || !html) return '';
-    const left = Math.round(fieldCfg.left * scale);
-    const top = Math.round(fieldCfg.top * scale);
-    const w = Math.round(fieldCfg.width * scale);
-    const h = Math.round(fieldCfg.height * scale);
-    const fs = Math.max(9, Math.round(fieldCfg.fontSize * scale));
-    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + html + '</div>';
-  }
-  if (f.addressee && addresseeRaw.trim()) fieldsHtml += placeField(f.addressee, mongolLine(addresseeRaw));
-  if (f.subject && subjectRaw.trim()) fieldsHtml += placeField(f.subject, mongolLine(subjectRaw));
-  fieldsHtml += placeField(f.mainText, renderMongolHtml(lastConverted));
-
-  box.innerHTML =
-    '<div style="position:relative;width:' + displayW + 'px;height:' + displayH + 'px;' +
-    'background-image:url(\'' + cfg.img + '\');background-size:100% 100%;background-repeat:no-repeat;' +
-    'border:1px solid #d5dbe3;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin:0 auto;overflow:hidden;">' +
-    fieldsHtml +
-    '</div>' +
-    '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— бодит бланкны зураг дээр давхарласан харагдац (зөвхөн дэлгэцэд; Word татахад зураг ороохгүй) —</div>';
-}
-
 function renderPreview(){
   const box = document.getElementById('previewBox');
   if (!lastConverted.trim()){
     box.innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
     return;
   }
-  const cat0 = document.getElementById('docCategory').value;
-  const paperKey0 = (document.getElementById('paperSize') || {}).value || 'A4';
-  const lhCfg = letterheadConfigFor(cat0, paperKey0);
-  if (lhCfg){
-    renderPreviewWithLetterheadImage(lhCfg);
-    return;
-  }
-  const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml() : { cols: [] };
-  const paperKey = paperKey0;
-  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:25, marginBottom:15, marginLeft:15, marginRight:15 };
-  const readMm = (id, fallback) => {
-    const el = document.getElementById(id);
-    const v = el ? parseFloat(el.value) : NaN;
-    return (isFinite(v) && v >= 0) ? v : fallback;
-  };
-  const mT = readMm('marginTop', base.marginTop);
-  const mB = readMm('marginBottom', base.marginBottom);
-  const mL = readMm('marginLeft', base.marginLeft);
-  const mR = readMm('marginRight', base.marginRight);
-  const isA5 = paperKey === 'A5';
-
-  const pagePxWidth = 620; // preview-ийн дэлгэцний өргөн (px), зөвхөн харагдац
-  const pagePxHeight = Math.round(pagePxWidth * (base.height / base.width));
-  const pxPerMm = pagePxWidth / base.width; // хэвтээ, босоо аль алинд нь ижил (тэгш хуваарь)
-
-  const contentTop = mT;
-  const contentLeft = mL;
-  const contentRight = base.width - mR;
-  const contentBottom = base.height - mB;
-  const usableHeightMm = Math.max(0, contentBottom - contentTop);
-
-  // Хэрэглэгчийн өгсөн жинхэнэ засварлагчийн зурган жишээнүүд (Downloads/А4.png, А5.png,
-  // Захирамжлал.png) дээр тус бүрдэл (лого, байгууллагын нэр, хэнд хандах, тэргүү, гол
-  // бичвэр) БҮГД өөрийн гэсэн ЦАЙВАР ХҮРЭЭТЭЙ (rounded, light-gray) хайрцганд тусдаа
-  // байрладаг — үүнийг ЯГ дуурайлгаж, багана бүрийг иймэрхүү "талбарын хайрцаг" болгов.
-  // Жинхэнэ засварлагчийн зурган жишээн дээр талбар бүр ШУЛУУН булантай, нимгэн саарал
-  // хүрээтэй, зүүн дээд/зүүн доод буланд нь жижиг цэнхэр "сонгогдсон талбар" тэмдэг
-  // (⌐ хэлбэрийн буланг тэмдэглэсэн зураас)-тай харагддаг — үүнийг нэмж дуурайлгав.
-  const cornerMarks = function(){
-    const c = '#4c7fd4';
-    const mk = function(top, left, rotate){
-      return '<div style="position:absolute;' + top + left + 'width:9px;height:9px;border-top:' + (rotate.indexOf('t')>=0?('2px solid '+c):'none') + ';border-bottom:' + (rotate.indexOf('b')>=0?('2px solid '+c):'none') + ';border-left:2px solid ' + c + ';pointer-events:none;"></div>';
-    };
-    return mk('top:-1px;','left:-1px;','t') + mk('bottom:-1px;','left:-1px;','b');
-  };
-  const FIELD_GAP_PX = 6; // хайрцаг хоорондын цайвар зай
-  const cols = sidebar.cols || [];
-  let innerHtml = '';
-  let curLeftMm = contentLeft;
-  cols.forEach(function(col){
-    const leftPx = Math.round(curLeftMm * pxPerMm);
-    const topPx = Math.round(contentTop * pxPerMm);
-    const widthPx = Math.max(0, Math.round(col.widthMm * pxPerMm) - FIELD_GAP_PX);
-    const heightPx = Math.round(usableHeightMm * pxPerMm);
-    innerHtml += '<div style="position:absolute;left:' + leftPx + 'px;top:' + topPx + 'px;width:' + widthPx + 'px;height:' + heightPx + 'px;' +
-      'border:1px solid #dbe1e8;background:#fff;padding:5px;box-sizing:border-box;overflow:hidden;">' + col.html + cornerMarks() + '</div>';
-    curLeftMm += col.widthMm;
-  });
-
-  const bodyLeftPx = Math.round(curLeftMm * pxPerMm);
-  const bodyTopPx = Math.round(contentTop * pxPerMm);
-  const bodyWidthPx = Math.max(0, Math.round((contentRight - curLeftMm) * pxPerMm));
-  const bodyHeightPx = Math.round(usableHeightMm * pxPerMm);
-  innerHtml += '<div style="position:absolute;left:' + bodyLeftPx + 'px;top:' + bodyTopPx + 'px;width:' + bodyWidthPx + 'px;height:' + bodyHeightPx + 'px;' +
-    'border:1px solid #e8ebee;padding:6px;box-sizing:border-box;overflow:hidden;">' +
-    '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
-
-  box.innerHTML =
-    '<div style="position:relative;width:' + pagePxWidth + 'px;height:' + pagePxHeight + 'px;background:#fff;border:1px solid #d5dbe3;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin:0 auto;overflow:hidden;">' +
-    innerHtml +
-    '</div>' +
-    '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— ' + (isA5 ? 'А5' : 'А4') + ' хэвтээ (' + base.width + '×' + base.height + 'мм), зах: дээд ' + mT + 'мм / доод ' + mB + 'мм / зүүн ' + mL + 'мм / баруун ' + mR + 'мм —</div>';
-}
-
-// Preview-тэй яг ижил өгөгдлөөр (buildSidebarHtml), гэхдээ px биш БОДИТ мм нэгжээр
-// #printArea-г дүүргэнэ. Хоёр газарт (шууд хэвлэх, PDF татах) хоёуланд нь ашиглагдана.
-// Буцаах утга: {base} — тухайн цаасны PAPER_CONFIG (width/height мм гэх мэт).
-function fillPrintArea(){
-  const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
-  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:25, marginBottom:15, marginLeft:15, marginRight:15 };
-  const readMm = (id, fallback) => {
-    const el = document.getElementById(id);
-    const v = el ? parseFloat(el.value) : NaN;
-    return (isFinite(v) && v >= 0) ? v : fallback;
-  };
-  const mT = readMm('marginTop', base.marginTop);
-  const mB = readMm('marginBottom', base.marginBottom);
-  const mL = readMm('marginLeft', base.marginLeft);
-  const mR = readMm('marginRight', base.marginRight);
-  const contentTop = mT, contentLeft = mL, contentRight = base.width - mR, contentBottom = base.height - mB;
-  const usableHeightMm = Math.max(0, contentBottom - contentTop);
-
-  const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml(true) : { cols: [] };
-  const cols = sidebar.cols || [];
-  let innerHtml = '';
-  let curLeftMm = contentLeft;
-  const GAPMM = 1.5;
-  cols.forEach(function(col){
-    const widthMm = Math.max(0, col.widthMm - GAPMM);
-    innerHtml += '<div style="position:absolute;left:' + curLeftMm + 'mm;top:' + contentTop + 'mm;width:' + widthMm + 'mm;height:' + usableHeightMm + 'mm;overflow:hidden;">' + col.html + '</div>';
-    curLeftMm += col.widthMm;
-  });
-  const bodyWidthMm = Math.max(0, contentRight - curLeftMm);
-  innerHtml += '<div style="position:absolute;left:' + curLeftMm + 'mm;top:' + contentTop + 'mm;width:' + bodyWidthMm + 'mm;height:' + usableHeightMm + 'mm;overflow:hidden;">' +
-    '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
-
-  const printArea = document.getElementById('printArea');
-  printArea.innerHTML = '<div id="printPageBox" style="position:relative;width:' + base.width + 'mm;height:' + base.height + 'mm;background:#fff;">' + innerHtml + '</div>';
-  return base;
-}
-
-// "Шууд хэвлэх" — browser-ийн window.print()-ийг ашиглана. АНХААРАХ: энэ арга нь
-// хэвлэх цонхны Хуудасны хэмжээ (Paper size)-ийг хэрэглэгч ГАРААР A4/A5 + Хэвтээ болгож
-// сонгоогүй бол @page CSS-ийг зарим тохиолдолд (өөр өөр принтер/драйвер, "Save as PDF" бус
-// бодит принтер сонгосон үед) хүлээж авахгүй, улмаар текст буруу хуудсанд, буруу масштабтай
-// (жишээ нь 4 хуудсанд хуваагдаж) хэвлэгдэх эрсдэлтэй. Хэрэв энэ тохиолдвол доорх "PDF татах"
-// товчийг ашиглаарай — тэр нь хуудасны хэмжээг ФАЙЛ ДОТОРХ нь баталгаатай тогтоодог тул илүү
-// найдвартай.
-function printPreview(){
-  if (!lastConverted.trim()){
-    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
-    return;
-  }
-  const base = fillPrintArea();
-
-  // @page хэмжээг тухайн цаасны хэмжээ (А4/А5, хэвтээ)-тэй динамикаар тааруулна
-  let pageStyleTag = document.getElementById('dynamicPageStyle');
-  if (!pageStyleTag){
-    pageStyleTag = document.createElement('style');
-    pageStyleTag.id = 'dynamicPageStyle';
-    document.head.appendChild(pageStyleTag);
-  }
-  pageStyleTag.textContent = '@page{ size:' + base.width + 'mm ' + base.height + 'mm; margin:0; }';
-
-  setTimeout(function(){ window.print(); }, 50);
-}
-
-// "PDF татах" — ХАМГИЙН НАЙДВАРТАЙ хэвлэх арга. Хуудасны хэмжээ (А4/А5 хэвтээ) нь PDF
-// ФАЙЛЫН ӨӨРИЙНХ НЬ хуудасны тохиргоонд шууд бичигдэх тул browser-ийн хэвлэх цонхны
-// Paper size сонголтоос ХАМААРАХГҮЙ — зөвхөн PDF-ээ нээгээд хэвлэхдээ "Бодит хэмжээ /
-// Actual size / 100%" (FIT TO PAGE БИШ) сонговол л болно. html2canvas-аар #printArea-г
-// өндөр нягтралтай (scale:3) зурган болгож аваад, jsPDF-ээр яг тэр хэмжээст (мм) хуудсан
-// дээр бүтэн байрлуулна — дэлгэц дээрх Preview-тэй ЯГ адилхан харагдана.
-async function downloadPdf(){
-  if (!lastConverted.trim()){
-    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
-    return;
-  }
-  if (typeof html2canvas !== 'function' || !window.jspdf){
-    alert('PDF үүсгэх сан (html2canvas/jsPDF) ачаалагдсангүй. Интернэт холболтоо шалгаад дахин оролдоно уу.');
-    return;
-  }
-  const statusEl = document.getElementById('docxStatus');
-  if (statusEl) statusEl.textContent = '⏳ PDF бэлдэж байна...';
-  try {
-    const base = fillPrintArea();
-    const pageBox = document.getElementById('printPageBox');
-    // Preview-той адил дэлгэцэнд харагдахын тулд түр зуур харагдах, гэхдээ хуудасны
-    // урсгалаас гадуур (offscreen) байрлуулна — ингэснээр хэрэглэгчийн бусад агуулгыг
-    // шахахгүй.
-    const printArea = document.getElementById('printArea');
-    printArea.style.position = 'fixed';
-    printArea.style.left = '0';
-    printArea.style.top = '0';
-    printArea.style.zIndex = '-1';
-    printArea.style.display = 'block';
-    printArea.style.visibility = 'visible';
-    printArea.style.opacity = '0.01'; // үзэгдэхгүй ч html2canvas render хийж чадахуйц
-    await new Promise(r => setTimeout(r, 60));
-
-    const canvas = await html2canvas(pageBox, { scale: 3, backgroundColor: '#ffffff', useCORS: true });
-    const imgData = canvas.toDataURL('image/png');
-
-    printArea.style.display = '';
-    printArea.style.visibility = '';
-    printArea.style.opacity = '';
-    printArea.style.position = '';
-    printArea.style.zIndex = '';
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [base.width, base.height] });
-    pdf.addImage(imgData, 'PNG', 0, 0, base.width, base.height, undefined, 'FAST');
-    const cat = document.getElementById('docCategory').value;
-    pdf.save('mongol-bichig-' + cat + '-' + (document.getElementById('paperSize') || {}).value + '.pdf');
-    if (statusEl) statusEl.textContent = '✅ PDF татагдлаа';
-  } catch(e){
-    console.error(e);
-    if (statusEl) statusEl.textContent = '';
-    alert('PDF үүсгэхэд алдаа гарлаа: ' + e.message);
-  }
+  // ЗӨВХӨН хөрвүүлсэн Монгол бичгээ харуулна — ямар ч CSS-ээр бланк/хүрээ дуурайлгах,
+  // байрлал тооцоолох гэж оролдохгүй. Бодит байрлал, зай, зэрэгцээ бүрдэл (лого,
+  // байгууллагын нэр, хэнд хандах/тэргүүгийн зай гэх мэт) БҮГД Word загвар (.docx)
+  // файлд аль хэдийн бэлэн байдаг тул "Word файл татах" товчийг ашиглана уу.
+  box.innerHTML = '<div class="mongol-vertical" style="margin:0 auto;">' + renderMongolHtml(lastConverted) + '</div>';
 }
 
 function clearAll(){
@@ -1369,111 +1073,24 @@ function mongolDateLine(rawValue){
 // байгууллагын нэр нь доор нь цэнхэр өнгөөр — үүнийг ЯГ адилхан дуурайлгав.
 // Соёмбо хэлбэрийг ойролцоогоор дуурайлгасан жижиг SVG (бодит лого биш, зөвхөн
 // "энд лого байрлана" гэдгийг илэрхийлэх дэлгэцний тэмдэг).
-function soyomboIconSvg(){
-  return '<svg width="18" height="26" viewBox="0 0 18 26" fill="#1a5fb4">' +
-    '<circle cx="9" cy="3.2" r="2.6"/>' +
-    '<circle cx="9" cy="9.2" r="1.9"/>' +
-    '<path d="M9 12.5 L13 17.5 L9 17.5 L9 22 L5 17.5 L9 17.5 Z"/>' +
-    '<rect x="1" y="12" width="2" height="12"/>' +
-    '<rect x="15" y="12" width="2" height="12"/>' +
-  '</svg>';
-}
+
 // Пиксель-хэмжилтээр (Downloads/А4.png дээр) баталгаажуулсан харьцаа: лого ~10%,
 // байгууллагын нэр ~34%, хаягийн мэдээлэл ~40% (үлдсэн хэсэг цоорхой) — 3 давхар блок.
-function letterheadPlaceholderHtml(){
-  return '<div style="display:flex;flex-direction:column;align-items:stretch;height:100%;">' +
-    '<div style="border:1.5px dashed #e0393e;padding:4px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-bottom:8px;">' +
-      soyomboIconSvg() +
-    '</div>' +
-    '<div class="mongol-vertical" style="font-size:9.5pt;color:#2f6fd6;flex:0 0 34%;overflow:hidden;">' + mongolLine('Байгууллагын нэр (хэвлэмэл хуудсан дээр)') + '</div>' +
-    '<div style="flex:0 0 10px;"></div>' +
-    '<div class="mongol-vertical" style="font-size:8pt;color:#2f6fd6;flex:1;overflow:hidden;">' + mongolLine('Хаяг, утас, цахим шуудан (хэвлэмэл хуудсан дээр)') + '</div>' +
-  '</div>';
-}
+
 
 // forPrint=true үед: (1) талбарын нэрийг харуулах саарал "[Хэнд хандаж]" гэх мэт тайлбар
 // шошго ("tag") ХАРУУЛАХГҮЙ, (2) лого/байгууллагын нэрийн байрлалыг зөвхөн ДЭЛГЭЦЭНД
 // харуулах улаан тасархай хүрээ + тайлбар текст ("Байгууллагын нэр (хэвлэмэл хуудсан
 // дээр)") ОГТ ХЭВЛЭХГҮЙ (зайг нь л хадгална) — учир нь эдгээр нь ЖИНХЭНЭ хэвлэмэл
 // хуудсан дээр аль хэдийн байгаа тул дахин хэвлэвэл давхарч, будлиулна.
-function buildSidebarHtml(forPrint){
-  const cat = document.getElementById('docCategory').value;
-  const tag = (label) => forPrint ? '' : ('<div style="font-size:9px;color:#9aa3af;">[' + label + ']</div>');
-  const letterheadHtml = forPrint ? '' : letterheadPlaceholderHtml();
-  if (cat === 'zahiramjlal'){
-    const orgTitleRaw = document.getElementById('orgTitle').value.trim();
-    const docKind = document.getElementById('docKind').value;
-    const cityRaw = document.getElementById('cityName').value.trim();
-    const dateRaw = document.getElementById('docDate').value.trim();
-    const subjectRaw = (document.getElementById('docSubjectZ') || {}).value ? document.getElementById('docSubjectZ').value.trim() : '';
-    const titleLine = orgTitleRaw ? (mongolLine(orgTitleRaw) + '<br>') : '';
-    const docKindLine = mongolLine(docKind);
-    const dateLine = mongolDateLine(dateRaw || '________ оны ____ сарын ____ өдөр');
-    const cityLine = cityRaw ? mongolLine(cityRaw) : '';
-    // А1 хавсралт: 1-р багана (20мм) — байгууллага/нэр/төрөл; 2-р багана (20мм) — огноо/дугаар/хот
-    const cols = [
-      { widthMm: 20, html: tag('Байгууллага/төрөл') + '<div class="mongol-vertical" style="font-size:13pt; font-weight:bold;">' + titleLine + docKindLine + '</div>' },
-      { widthMm: 20, html: tag('Огноо/дугаар/хот') + '<div class="mongol-vertical" style="font-size:11pt;">' + dateLine + '</div>' +
-          '<div class="mongol-vertical" style="font-size:11pt; margin-top:4mm;">Дугаар ______</div>' +
-          (cityLine ? '<div class="mongol-vertical" style="font-size:11pt; margin-top:4mm;">' + cityLine + '</div>' : '') }
-    ];
-    if (subjectRaw) cols.push({ widthMm: 20, html: tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:13pt;">' + mongolLine(subjectRaw) + '</div>' });
-    return { cols: cols };
-  }
-  if (cat === 'albanbichig'){
-    // Хэрэглэгчийн ЭЦЭСЛЭН шаардсан дүрэм (2 удаа тодорхой тайлбарласан):
-    //  - А4: ХЭНД ХАНДАХ дээр, ТЭРГҮҮ доор нь, НЭГ баганад дараалуулан байрлана.
-    //  - А5: ТЭРГҮҮ огт байхгүй (харагдахгүй) — зөвхөн ХЭНД ХАНДАХ гарч ирнэ, голлосон.
-    // Байгууллагын нэр/хаяг/огноо/дугаар/хариутай зэрэг нь ЖИНХЭНЭ хэвлэмэл хуудсан дээр
-    // аль хэдийн хэвлэгдсэн байдаг тул программ дахин хэвлэхгүй — зайг нь spacer баганаар хадгална.
-    const addresseeRaw = document.getElementById('addresseeName').value.trim();
-    const subjectRaw = document.getElementById('docSubject').value.trim();
-    const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
-    const defaultML = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey].marginLeft : 15;
-    const mLval = parseFloat((document.getElementById('marginLeft') || {}).value);
-    const mL = (isFinite(mLval) && mLval >= 0) ? mLval : defaultML;
-    const cols = [];
-    if (paperKey === 'A5'){
-      // MonScript-ийн бодит А5 тохиргоо: "хэнд, товч утга эхлэх шугам"=75мм, "гол бичвэр
-      // эхлэх шугам"=95мм (хуудасны зүүн ирмэгээс) — spacer = зах-75мм, meta-бүс = 75-95мм.
-      // ТЭРГҮҮ (subjectRaw) А5 ДЭЭР ОГТ АШИГЛАГДАХГҮЙ — зөвхөн хэнд хандах, голлосон.
-      const spacerMm = Math.max(0, 75 - mL);
-      cols.push({ widthMm: spacerMm, html: letterheadHtml });
-      const addresseeHtml = addresseeRaw ? ('<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>') : '';
-      if (addresseeHtml) cols.push({ widthMm: 20, html: addresseeHtml });
-    } else {
-      // А4: MNS 6395:2022 хуудас 7-ын "10" (хэнд хандах) яг тэнхлэг — 2+3-р багана нэгтгэсэн
-      // 44мм (24+20) бүсэд байрладаг. Хэнд хандах + тэргүүг НЭГ баганад дараалуулан (хэнд
-      // хандах дээр, тэргүү доор), баганын өргөнийг тэр 44мм-ээр авав.
-      cols.push({ widthMm: 37, html: letterheadHtml });
-      let stackedHtml = '';
-      if (addresseeRaw) stackedHtml += tag('Хэнд хандаж') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>';
-      // MNS 6395:2022 А2 хавсралтын хуудас 7-ын зурган схемийг пиксель хэмжилтээр (10,11
-      // тоймын тойрог) шалгахад: "10" (Хэнд хандах)-ийн төв ойролцоогоор баганы 35%-д,
-      // "11" (Тэргүү)-ийн төв ойролцоогоор 65%-д байрладаг тул хоорондын зайг өмнөх 10мм-ээс
-      // бодит ~35мм болгож нэмэгдүүлэв (Word загварт мөн 9 <w:br/> болгож тохирсон).
-      if (subjectRaw) stackedHtml += tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center; margin-top:35mm;">' + mongolLine(subjectRaw) + '</div>';
-      if (stackedHtml) cols.push({ widthMm: 44, html: stackedHtml });
-    }
-    return { cols: cols };
-  }
-  return { cols: [] };
-}
+
 
 // MNS 5140-2:2021: "Боловсруулсан, хянасан тухай тэмдэглэл" (бүрдэл №20)-ийг
 // баримт бичгийн сүүлийн хуудасны зүүн доод буланд жижиг фонтоор байрлуулна.
 // Нэрийг мөн Кирилл→Монгол бичигт хөрвүүлнэ (бусад бичвэртэй ижил байдлаар).
 // (Word-ийн HTML экспортод үнэн зэрэгцээ absolute positioning тогтвортой ажилладаггүй тул
 // бичвэрийн эцэст урсгалын дагуу байрлуулсан бөгөөд шаардлагатай бол Word дотор чирж болно)
-function buildFooterHtml(){
-  const preparedRaw = document.getElementById('preparedBy').value.trim();
-  const checkedRaw = document.getElementById('checkedBy').value.trim();
-  if (!preparedRaw && !checkedRaw) return '';
-  const parts = [];
-  if (preparedRaw) parts.push('Боловсруулсан: ' + mongolLine(preparedRaw));
-  if (checkedRaw) parts.push('Хянасан: ' + mongolLine(checkedRaw));
-  return '<div class="mongol-vertical" style="margin-top:15mm; font-size:9pt; min-height:40px;">' + parts.join('&nbsp;&nbsp;&nbsp;&nbsp;') + '</div>';
-}
+
 
 let letterheadDataUrl = '';
 function loadLetterhead(e){
