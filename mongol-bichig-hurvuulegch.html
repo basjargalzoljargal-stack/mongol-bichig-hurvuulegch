@@ -1090,6 +1090,16 @@ function renderPreview(){
   // Захирамжлал.png) дээр тус бүрдэл (лого, байгууллагын нэр, хэнд хандах, тэргүү, гол
   // бичвэр) БҮГД өөрийн гэсэн ЦАЙВАР ХҮРЭЭТЭЙ (rounded, light-gray) хайрцганд тусдаа
   // байрладаг — үүнийг ЯГ дуурайлгаж, багана бүрийг иймэрхүү "талбарын хайрцаг" болгов.
+  // Жинхэнэ засварлагчийн зурган жишээн дээр талбар бүр ШУЛУУН булантай, нимгэн саарал
+  // хүрээтэй, зүүн дээд/зүүн доод буланд нь жижиг цэнхэр "сонгогдсон талбар" тэмдэг
+  // (⌐ хэлбэрийн буланг тэмдэглэсэн зураас)-тай харагддаг — үүнийг нэмж дуурайлгав.
+  const cornerMarks = function(){
+    const c = '#4c7fd4';
+    const mk = function(top, left, rotate){
+      return '<div style="position:absolute;' + top + left + 'width:9px;height:9px;border-top:' + (rotate.indexOf('t')>=0?('2px solid '+c):'none') + ';border-bottom:' + (rotate.indexOf('b')>=0?('2px solid '+c):'none') + ';border-left:2px solid ' + c + ';pointer-events:none;"></div>';
+    };
+    return mk('top:-1px;','left:-1px;','t') + mk('bottom:-1px;','left:-1px;','b');
+  };
   const FIELD_GAP_PX = 6; // хайрцаг хоорондын цайвар зай
   const cols = sidebar.cols || [];
   let innerHtml = '';
@@ -1100,7 +1110,7 @@ function renderPreview(){
     const widthPx = Math.max(0, Math.round(col.widthMm * pxPerMm) - FIELD_GAP_PX);
     const heightPx = Math.round(usableHeightMm * pxPerMm);
     innerHtml += '<div style="position:absolute;left:' + leftPx + 'px;top:' + topPx + 'px;width:' + widthPx + 'px;height:' + heightPx + 'px;' +
-      'border:1px solid #dbe1e8;border-radius:6px;background:#fff;padding:5px;box-sizing:border-box;overflow:hidden;">' + col.html + '</div>';
+      'border:1px solid #dbe1e8;background:#fff;padding:5px;box-sizing:border-box;overflow:hidden;">' + col.html + cornerMarks() + '</div>';
     curLeftMm += col.widthMm;
   });
 
@@ -1109,7 +1119,7 @@ function renderPreview(){
   const bodyWidthPx = Math.max(0, Math.round((contentRight - curLeftMm) * pxPerMm));
   const bodyHeightPx = Math.round(usableHeightMm * pxPerMm);
   innerHtml += '<div style="position:absolute;left:' + bodyLeftPx + 'px;top:' + bodyTopPx + 'px;width:' + bodyWidthPx + 'px;height:' + bodyHeightPx + 'px;' +
-    'border:1px solid #e8ebee;border-radius:6px;padding:6px;box-sizing:border-box;overflow:hidden;">' +
+    'border:1px solid #e8ebee;padding:6px;box-sizing:border-box;overflow:hidden;">' +
     '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
 
   box.innerHTML =
@@ -1214,10 +1224,21 @@ function mongolDateLine(rawValue){
 // Хэрэглэгчийн өгсөн жинхэнэ засварлагчийн зурган жишээ (Downloads/А4.png, А5.png,
 // Захирамжлал.png) дээр: лого нь УЛААН ЗУРААС (dashed) хүрээтэй тусдаа жижиг блок,
 // байгууллагын нэр нь доор нь цэнхэр өнгөөр — үүнийг ЯГ адилхан дуурайлгав.
+// Соёмбо хэлбэрийг ойролцоогоор дуурайлгасан жижиг SVG (бодит лого биш, зөвхөн
+// "энд лого байрлана" гэдгийг илэрхийлэх дэлгэцний тэмдэг).
+function soyomboIconSvg(){
+  return '<svg width="18" height="26" viewBox="0 0 18 26" fill="#1a5fb4">' +
+    '<circle cx="9" cy="3.2" r="2.6"/>' +
+    '<circle cx="9" cy="9.2" r="1.9"/>' +
+    '<path d="M9 12.5 L13 17.5 L9 17.5 L9 22 L5 17.5 L9 17.5 Z"/>' +
+    '<rect x="1" y="12" width="2" height="12"/>' +
+    '<rect x="15" y="12" width="2" height="12"/>' +
+  '</svg>';
+}
 function letterheadPlaceholderHtml(){
   return '<div style="display:flex;flex-direction:column;align-items:stretch;height:100%;">' +
-    '<div style="border:1.5px dashed #e0393e;border-radius:4px;padding:4px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-bottom:6px;">' +
-      '<svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#1a5fb4"/><circle cx="10" cy="6" r="2" fill="#fff"/><rect x="8.5" y="9" width="3" height="7" fill="#fff"/></svg>' +
+    '<div style="border:1.5px dashed #e0393e;padding:4px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-bottom:6px;">' +
+      soyomboIconSvg() +
     '</div>' +
     '<div class="mongol-vertical" style="font-size:9.5pt;color:#2f6fd6;flex:1;">' + mongolLine('Байгууллагын нэр, хаяг (хэвлэмэл хуудсан дээр)') + '</div>' +
   '</div>';
