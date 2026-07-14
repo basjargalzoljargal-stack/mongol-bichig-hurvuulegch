@@ -962,18 +962,22 @@ function convertText(){
 
 // Preview-г Word татахад яг ямар байдлаар хэвлэгдэхтэй аль болох ойролцоо харуулна:
 // бланкны зураг, сонгосон бичгийн ангиллын толгой хэсэг (тэргүү, хэнд хандах г.м), үндсэн бичвэр, footer.
+// Preview-г MNS 6395:2022-ийн мм хэмжээсээр яг тааруулж, position:absolute ашиглан
+// "бланк дээр давхарласан" (overlay) байдлаар зурна — жинхэнэ зурган файл ашиглахгүй
+// (хэрэглэгчийн өгсөн зургууд файл хэлбэрээр программд хүрч чадаагүй тул CSS-ээр дуурайлгав),
+// харин бүх багана/бичвэрийн БАЙРЛАЛ, ХЭМЖЭЭ нь бодит мм-ийн хэмжээсээс ШУУД тооцоологдоно.
+// Word татах үед (downloadDocx()) ЭНЭ функц огт оролцдоггүй — тэнд зөвхөн docxtemplater
+// ашиглан бэлэн .docx загвар руу текст шидэгддэг тул preview-ийн харагдац дур зоргоороо
+// өөрчлөгдсөн ч татагдах файлын бодит байрлалд НӨЛӨӨлөхгүй.
 function renderPreview(){
   const box = document.getElementById('previewBox');
   if (!lastConverted.trim()){
     box.innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
     return;
   }
-  const letterheadImgHtml = letterheadDataUrl
-    ? '<div style="text-align:center;margin-bottom:8px;"><img src="' + letterheadDataUrl + '" style="max-width:100%;max-height:60px;"></div>'
-    : '';
   const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml() : { cols: [] };
   const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
-  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:35, marginBottom:15, marginLeft:15, marginRight:15 };
+  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:25, marginBottom:15, marginLeft:15, marginRight:15 };
   const readMm = (id, fallback) => {
     const el = document.getElementById(id);
     const v = el ? parseFloat(el.value) : NaN;
@@ -984,49 +988,40 @@ function renderPreview(){
   const mL = readMm('marginLeft', base.marginLeft);
   const mR = readMm('marginRight', base.marginRight);
   const isA5 = paperKey === 'A5';
-  // Хуудасны харьцааг (үргэлж хэвтээ, MNS 6395 §3.1) болон зах (margin)-ийг бодит мм-ийн харьцаагаар дүрсэлнэ
+
   const pagePxWidth = 620; // preview-ийн дэлгэцний өргөн (px), зөвхөн харагдац
   const pagePxHeight = Math.round(pagePxWidth * (base.height / base.width));
-  const padTop = Math.round(pagePxHeight * (mT / base.height));
-  const padBottom = Math.round(pagePxHeight * (mB / base.height));
-  const padLeft = Math.round(pagePxWidth * (mL / base.width));
-  const padRight = Math.round(pagePxWidth * (mR / base.width));
-  // MNS 6395 Хавсралт А1/А2: тус бүрдэл (лого/нэр, огноо/дугаар, хэнд хандах, тэргүү) ӨӨР
-  // ӨӨРИЙН нарийн баганад, зурган схемийн байрлалын дарааллаар ЗҮҮНЭЭС БАРУУН тийш; гол
-  // бичвэр эдгээрийн хамгийн БАРУУН талд, өргөн баганад — MonScript-ийн бодит загвараар
-  // баталгаажуулсан ЭНГИЙН зэрэгцээ (тэгш) баганат бүтэц (sidebar.cols). sidebar.grid нь
-  // хуучин (nested/gridSpan) хувилбарын нөөц зам — одоо хэрэглэгддэггүй ч гэмгүй үлдээв.
-  let colsHtml = '';
-  if (sidebar.grid){
-    const g = sidebar.grid;
-    const wPx = (mm) => Math.round(pagePxWidth * (mm / base.width));
-    const w1 = wPx(g.col1.widthMm), wUp = wPx(g.upper.widthMm), w2 = wPx(g.col2.widthMm), w3 = wPx(g.col3.widthMm);
-    colsHtml =
-      '<div style="width:' + (w1 + wUp) + 'px;flex:0 0 ' + (w1 + wUp) + 'px;border-right:1px dashed #d9dee5;padding-right:6px;margin-right:8px;">' +
-        '<div style="display:flex;align-items:flex-start;">' +
-          '<div style="width:' + w1 + 'px;flex:0 0 ' + w1 + 'px;">' + g.col1.html + '</div>' +
-          '<div style="width:' + wUp + 'px;flex:0 0 ' + wUp + 'px;padding-left:6px;">' +
-            g.upper.html +
-            '<div style="margin-top:10mm;display:flex;align-items:flex-start;">' +
-              '<div style="width:' + w2 + 'px;flex:0 0 ' + w2 + 'px;">' + g.col2.html + '</div>' +
-              '<div style="width:' + w3 + 'px;flex:0 0 ' + w3 + 'px;padding-left:6px;">' + g.col3.html + '</div>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-  } else {
-    const cols = sidebar.cols || [];
-    for (const col of cols){
-      const wPx = Math.round(pagePxWidth * (col.widthMm / base.width));
-      colsHtml += '<div style="width:' + wPx + 'px;flex:0 0 ' + wPx + 'px;border-right:1px dashed #d9dee5;padding-right:6px;margin-right:8px;">' + col.html + '</div>';
-    }
-  }
-  const bodyDiv = '<div style="flex:1;min-width:0;"><div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
+  const pxPerMm = pagePxWidth / base.width; // хэвтээ, босоо аль алинд нь ижил (тэгш хуваарь)
+
+  const contentTop = mT;
+  const contentLeft = mL;
+  const contentRight = base.width - mR;
+  const contentBottom = base.height - mB;
+  const usableHeightMm = Math.max(0, contentBottom - contentTop);
+
+  const cols = sidebar.cols || [];
+  let innerHtml = '';
+  let curLeftMm = contentLeft;
+  cols.forEach(function(col){
+    const leftPx = Math.round(curLeftMm * pxPerMm);
+    const topPx = Math.round(contentTop * pxPerMm);
+    const widthPx = Math.round(col.widthMm * pxPerMm);
+    const heightPx = Math.round(usableHeightMm * pxPerMm);
+    innerHtml += '<div style="position:absolute;left:' + leftPx + 'px;top:' + topPx + 'px;width:' + widthPx + 'px;height:' + heightPx + 'px;' +
+      'border-right:1px dashed #dbe1e8;padding-right:4px;box-sizing:border-box;overflow:hidden;">' + col.html + '</div>';
+    curLeftMm += col.widthMm;
+  });
+
+  const bodyLeftPx = Math.round(curLeftMm * pxPerMm);
+  const bodyTopPx = Math.round(contentTop * pxPerMm);
+  const bodyWidthPx = Math.max(0, Math.round((contentRight - curLeftMm) * pxPerMm));
+  const bodyHeightPx = Math.round(usableHeightMm * pxPerMm);
+  innerHtml += '<div style="position:absolute;left:' + bodyLeftPx + 'px;top:' + bodyTopPx + 'px;width:' + bodyWidthPx + 'px;height:' + bodyHeightPx + 'px;overflow:hidden;">' +
+    '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
+
   box.innerHTML =
-    '<div style="width:' + pagePxWidth + 'px;min-height:' + pagePxHeight + 'px;background:#fff;border:1px solid #d5dbe3;box-shadow:0 2px 10px rgba(0,0,0,0.08);' +
-    'padding:' + padTop + 'px ' + padRight + 'px ' + padBottom + 'px ' + padLeft + 'px;margin:0 auto;">' +
-    letterheadImgHtml +
-    '<div style="display:flex;align-items:flex-start;">' + colsHtml + bodyDiv + '</div>' +
+    '<div style="position:relative;width:' + pagePxWidth + 'px;height:' + pagePxHeight + 'px;background:#fff;border:1px solid #d5dbe3;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin:0 auto;overflow:hidden;">' +
+    innerHtml +
     '</div>' +
     '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— ' + (isA5 ? 'А5' : 'А4') + ' хэвтээ (' + base.width + '×' + base.height + 'мм), зах: дээд ' + mT + 'мм / доод ' + mB + 'мм / зүүн ' + mL + 'мм / баруун ' + mR + 'мм —</div>';
 }
@@ -1120,6 +1115,16 @@ function mongolDateLine(rawValue){
 // хэлбэрээр буцаана — cols нь хуудасны зүүн талаас баруун тийш дараалсан баганууд, тус
 // бүр өөрийн w:textDirection-той (Word хүснэгтийн нүд); гол бичвэр эдгээрийн БАРУУН талд,
 // тусдаа өргөн баганад орно.
+// Бодит хэвлэмэл хуудсан дээр аль хэдийн байдаг (лого + байгууллагын нэр) хэсгийг зөвхөн
+// ДУУРАЙЛГАЖ, цэнхэр өнгөөр Preview дээр харуулна (жинхэнэ MonScript загварын өнгөт схемтэй
+// адилтгав) — энэ бол зөвхөн дэлгэцний дүрслэл, .docx файлд шидэгдэхгүй.
+function letterheadPlaceholderHtml(){
+  return '<div style="display:flex;flex-direction:column;align-items:center;height:100%;">' +
+    '<div style="width:22px;height:22px;background:#1a5fb4;border-radius:3px;margin-bottom:4px;flex:0 0 auto;"></div>' +
+    '<div class="mongol-vertical" style="font-size:10pt;color:#3f7fd1;">' + mongolLine('Байгууллагын нэр, хаяг (хэвлэмэл хуудсан дээр)') + '</div>' +
+  '</div>';
+}
+
 function buildSidebarHtml(){
   const cat = document.getElementById('docCategory').value;
   const tag = (label) => '<div style="font-size:9px;color:#9aa3af;">[' + label + ']</div>';
@@ -1161,14 +1166,14 @@ function buildSidebarHtml(){
       // эхлэх шугам"=95мм (хуудасны зүүн ирмэгээс) — spacer = зах-75мм, meta-бүс = 75-95мм.
       // ТЭРГҮҮ (subjectRaw) А5 ДЭЭР ОГТ АШИГЛАГДАХГҮЙ — зөвхөн хэнд хандах, голлосон.
       const spacerMm = Math.max(0, 75 - mL);
-      cols.push({ widthMm: spacerMm, html: tag('(хэвлэмэл хуудсан дээр бэлэн)') });
+      cols.push({ widthMm: spacerMm, html: letterheadPlaceholderHtml() });
       const addresseeHtml = addresseeRaw ? ('<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>') : '';
       if (addresseeHtml) cols.push({ widthMm: 20, html: addresseeHtml });
     } else {
       // А4: MNS 6395:2022 хуудас 7-ын "10" (хэнд хандах) яг тэнхлэг — 2+3-р багана нэгтгэсэн
       // 44мм (24+20) бүсэд байрладаг. Хэнд хандах + тэргүүг НЭГ баганад дараалуулан (хэнд
       // хандах дээр, тэргүү доор), баганын өргөнийг тэр 44мм-ээр авав.
-      cols.push({ widthMm: 37, html: tag('(хэвлэмэл хуудсан дээр бэлэн)') });
+      cols.push({ widthMm: 37, html: letterheadPlaceholderHtml() });
       let stackedHtml = '';
       if (addresseeRaw) stackedHtml += tag('Хэнд хандаж') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>';
       if (subjectRaw) stackedHtml += tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center; margin-top:10mm;">' + mongolLine(subjectRaw) + '</div>';
