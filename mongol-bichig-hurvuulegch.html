@@ -338,12 +338,15 @@
 
       <div class="row">
         <button onclick="downloadDocx()">Word файл татах (.docx)</button>
+        <button onclick="downloadPdf()" style="background:#b3261e;">📄 PDF татах (хэмжээ баталгаатай)</button>
         <button onclick="printPreview()" style="background:#3a7d3a;">🖨️ Шууд хэвлэх (Preview-ээс)</button>
         <span id="docxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
       </div>
       <div class="note">
-        🖨️ <b>"Шууд хэвлэх"</b> нь дэлгэц дээрх Preview-г ЯГ тэр хэлбэрээр нь (Word-гүйгээр) шууд принтерт илгээнэ. Хэрэв танд <b>хэвлэмэл хуудас (лого/байгууллагын нэр аль хэдийн хэвлэгдсэн цаас)</b> байгаа бол:
-        уг цаасаа принтертээ ачаалаад, хэвлэх цонх гарахад <b>Хуудасны хэмжээ (Paper size) = A4/A5, Чиглэл = Хэвтээ (Landscape), Зах (Margins) = Байхгүй/Хамгийн бага (None/Minimum), Хэмжээ (Scale) = 100%</b> болгож сонгоод хэвлээрэй — ингэснээр текст чинь хэвлэмэл цаасан дээрх зөв, хоосон газруудад буух болно. Word файл татах товч ч мөн адил зорилготой (зөвхөн текст, зурагг үй, Word дотор нэмж засварлах боломжтой).
+        📄 <b>"PDF татах"</b> — ХАМГИЙН НАЙДВАРТАЙ арга. Энэ товч дэлгэц дээрх Preview-г яг тэр хэвээр нь, А4/А5 хэвтээ хэмжээгээ ФАЙЛ ДОТРОО баталгаатай (browser-ийн хэвлэх цонхны тохиргооноос үл хамааран) PDF болгож татна. Татсан PDF-ээ нээгээд хэвлэхдээ <b>"Бодит хэмжээ / Actual size / 100%"</b> сонгоорой (Fit to page БИШ) — ингэснээр хэвлэмэл хуудсан дээр яг зөв газартаа буух баталгаатай.
+      </div>
+      <div class="note">
+        🖨️ <b>"Шууд хэвлэх"</b> нь browser-ийн window.print()-ийг шууд ашиглана — хурдан, гэхдээ зарим компьютер/принтерийн тохиргоонд Хуудасны хэмжээг (A4/A5 хэвтээ) ГАРААР сонгож өгөхгүй бол буруу (олон хуудсанд хуваагдсан гэх мэт) хэвлэгдэж болзошгүй. Хэвлэх цонх гарахад <b>Хуудасны хэмжээ (Paper size) = A4/A5, Чиглэл = Хэвтээ (Landscape), Зах (Margins) = Байхгүй/Хамгийн бага (None/Minimum), Хэмжээ (Scale) = 100%</b> болгож сонгосон эсэхээ шалгаарай. Асуудал гарвал дээрх "PDF татах" товчийг ашиглана уу.
       </div>
       <div class="note">
         ⚠️ Хөрвүүлэлт нь толь бичиг + үсэг тулгах зарчим хосолсон тул зарим (ялангуяа хувирсан/залгаварт) үг бүрэн 100% нарийвчлал баталгаагүй. Албан бичигт ашиглахын өмнө хянуулахыг зөвлөж байна. Тоо (0-9), латин үсэг, имэйл, %, огноо зэргийг босоо бичгийн урсгал дунд хэвтээгээр, зөв дараалалтай харуулахаар тусад нь тохируулсан (MonScript-ийн үнэгүй хувилбарт тоо алдаж байсан асуудлыг анхаарч). Word дээр нээгдэхэд бичиг зөв харагдахгүй бол "Mongolian Baiti" фонт суулгасан эсэхээ шалгана уу (Windows дээр стандартаар байдаг).
@@ -399,6 +402,8 @@
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.44.0/build/docxtemplater.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ===== Firebase Authentication (нэвтрэх gate) =====
 // АНХААР: энд зөвхөн апп нэрлэлт/түлхүүр (apiKey) байгаа тул нууц биш —
@@ -1149,17 +1154,10 @@ function renderPreview(){
     '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— ' + (isA5 ? 'А5' : 'А4') + ' хэвтээ (' + base.width + '×' + base.height + 'мм), зах: дээд ' + mT + 'мм / доод ' + mB + 'мм / зүүн ' + mL + 'мм / баруун ' + mR + 'мм —</div>';
 }
 
-// "Шууд хэвлэх" — renderPreview()-тэй яг ижил өгөгдлөөр (buildSidebarHtml), гэхдээ px
-// биш БОДИТ мм нэгжээр (@page-ийн физик хэмжээст шууд тохирно) #printArea-г дүүргэж,
-// window.print()-ийг дуудна. Хэрэглэгч Windows/Mac-ийн хэвлэх цонхонд Хуудасны хэмжээ
-// (A4/A5), Чиглэл (Хэвтээ), Зах (None/Minimum), Хэмжээ (100%) сонговол, хэвлэмэл (лого
-// хэвлэгдсэн) цаасан дээр текст яг зөв газраа буух ёстой.
-function printPreview(){
-  if (!lastConverted.trim()){
-    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
-    return;
-  }
-  const cat0 = document.getElementById('docCategory').value;
+// Preview-тэй яг ижил өгөгдлөөр (buildSidebarHtml), гэхдээ px биш БОДИТ мм нэгжээр
+// #printArea-г дүүргэнэ. Хоёр газарт (шууд хэвлэх, PDF татах) хоёуланд нь ашиглагдана.
+// Буцаах утга: {base} — тухайн цаасны PAPER_CONFIG (width/height мм гэх мэт).
+function fillPrintArea(){
   const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
   const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:25, marginBottom:15, marginLeft:15, marginRight:15 };
   const readMm = (id, fallback) => {
@@ -1189,7 +1187,23 @@ function printPreview(){
     '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
 
   const printArea = document.getElementById('printArea');
-  printArea.innerHTML = '<div style="position:relative;width:' + base.width + 'mm;height:' + base.height + 'mm;background:#fff;">' + innerHtml + '</div>';
+  printArea.innerHTML = '<div id="printPageBox" style="position:relative;width:' + base.width + 'mm;height:' + base.height + 'mm;background:#fff;">' + innerHtml + '</div>';
+  return base;
+}
+
+// "Шууд хэвлэх" — browser-ийн window.print()-ийг ашиглана. АНХААРАХ: энэ арга нь
+// хэвлэх цонхны Хуудасны хэмжээ (Paper size)-ийг хэрэглэгч ГАРААР A4/A5 + Хэвтээ болгож
+// сонгоогүй бол @page CSS-ийг зарим тохиолдолд (өөр өөр принтер/драйвер, "Save as PDF" бус
+// бодит принтер сонгосон үед) хүлээж авахгүй, улмаар текст буруу хуудсанд, буруу масштабтай
+// (жишээ нь 4 хуудсанд хуваагдаж) хэвлэгдэх эрсдэлтэй. Хэрэв энэ тохиолдвол доорх "PDF татах"
+// товчийг ашиглаарай — тэр нь хуудасны хэмжээг ФАЙЛ ДОТОРХ нь баталгаатай тогтоодог тул илүү
+// найдвартай.
+function printPreview(){
+  if (!lastConverted.trim()){
+    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
+    return;
+  }
+  const base = fillPrintArea();
 
   // @page хэмжээг тухайн цаасны хэмжээ (А4/А5, хэвтээ)-тэй динамикаар тааруулна
   let pageStyleTag = document.getElementById('dynamicPageStyle');
@@ -1201,6 +1215,61 @@ function printPreview(){
   pageStyleTag.textContent = '@page{ size:' + base.width + 'mm ' + base.height + 'mm; margin:0; }';
 
   setTimeout(function(){ window.print(); }, 50);
+}
+
+// "PDF татах" — ХАМГИЙН НАЙДВАРТАЙ хэвлэх арга. Хуудасны хэмжээ (А4/А5 хэвтээ) нь PDF
+// ФАЙЛЫН ӨӨРИЙНХ НЬ хуудасны тохиргоонд шууд бичигдэх тул browser-ийн хэвлэх цонхны
+// Paper size сонголтоос ХАМААРАХГҮЙ — зөвхөн PDF-ээ нээгээд хэвлэхдээ "Бодит хэмжээ /
+// Actual size / 100%" (FIT TO PAGE БИШ) сонговол л болно. html2canvas-аар #printArea-г
+// өндөр нягтралтай (scale:3) зурган болгож аваад, jsPDF-ээр яг тэр хэмжээст (мм) хуудсан
+// дээр бүтэн байрлуулна — дэлгэц дээрх Preview-тэй ЯГ адилхан харагдана.
+async function downloadPdf(){
+  if (!lastConverted.trim()){
+    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
+    return;
+  }
+  if (typeof html2canvas !== 'function' || !window.jspdf){
+    alert('PDF үүсгэх сан (html2canvas/jsPDF) ачаалагдсангүй. Интернэт холболтоо шалгаад дахин оролдоно уу.');
+    return;
+  }
+  const statusEl = document.getElementById('docxStatus');
+  if (statusEl) statusEl.textContent = '⏳ PDF бэлдэж байна...';
+  try {
+    const base = fillPrintArea();
+    const pageBox = document.getElementById('printPageBox');
+    // Preview-той адил дэлгэцэнд харагдахын тулд түр зуур харагдах, гэхдээ хуудасны
+    // урсгалаас гадуур (offscreen) байрлуулна — ингэснээр хэрэглэгчийн бусад агуулгыг
+    // шахахгүй.
+    const printArea = document.getElementById('printArea');
+    printArea.style.position = 'fixed';
+    printArea.style.left = '0';
+    printArea.style.top = '0';
+    printArea.style.zIndex = '-1';
+    printArea.style.display = 'block';
+    printArea.style.visibility = 'visible';
+    printArea.style.opacity = '0.01'; // үзэгдэхгүй ч html2canvas render хийж чадахуйц
+    await new Promise(r => setTimeout(r, 60));
+
+    const canvas = await html2canvas(pageBox, { scale: 3, backgroundColor: '#ffffff', useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+
+    printArea.style.display = '';
+    printArea.style.visibility = '';
+    printArea.style.opacity = '';
+    printArea.style.position = '';
+    printArea.style.zIndex = '';
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [base.width, base.height] });
+    pdf.addImage(imgData, 'PNG', 0, 0, base.width, base.height, undefined, 'FAST');
+    const cat = document.getElementById('docCategory').value;
+    pdf.save('mongol-bichig-' + cat + '-' + (document.getElementById('paperSize') || {}).value + '.pdf');
+    if (statusEl) statusEl.textContent = '✅ PDF татагдлаа';
+  } catch(e){
+    console.error(e);
+    if (statusEl) statusEl.textContent = '';
+    alert('PDF үүсгэхэд алдаа гарлаа: ' + e.message);
+  }
 }
 
 function clearAll(){
