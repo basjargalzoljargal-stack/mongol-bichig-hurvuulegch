@@ -1481,6 +1481,12 @@ async function downloadDocx(){
     const doc = new window.docxtemplater(zip, {
       paragraphLoop: true,
       linebreaks: true,
+      // Загвар .docx файлууд {{addressee}} маягийн ХОЁР нүдэн ({{ }}) tag ашигладаг тул
+      // docxtemplater-ийн үндсэн (ганц {} нүдэн) тохиргоог бус, яг үүнтэй таарсан
+      // delimiters-ийг тодорхой зааж өгөх ёстой. Үгүй бол "Duplicate open/close tag"
+      // (Multi error) алдаа гарна — учир нь docxtemplater {{addressee}} тэмдэглэгээг
+      // "{" + "{addressee}" + "}" гэж 2 давхар нээлттэй/хаалттай tag мэт андуурдаг.
+      delimiters: { start: '{{', end: '}}' },
     });
     doc.render(docData);
     const out = doc.getZip().generate({
@@ -1492,7 +1498,13 @@ async function downloadDocx(){
   } catch (error){
     console.error('Алдаа гарлаа:', error);
     if (statusEl) statusEl.textContent = '';
-    alert('Алдаа гарлаа: ' + error.message);
+    let detail = error.message;
+    if (error.properties && Array.isArray(error.properties.errors) && error.properties.errors.length){
+      detail = error.properties.errors.map(function(e){
+        return (e.properties && e.properties.explanation) ? e.properties.explanation : e.message;
+      }).join('\n');
+    }
+    alert('Алдаа гарлаа:\n' + detail);
   }
 }
 
