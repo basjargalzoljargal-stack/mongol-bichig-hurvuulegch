@@ -1235,12 +1235,16 @@ function soyomboIconSvg(){
     '<rect x="15" y="12" width="2" height="12"/>' +
   '</svg>';
 }
+// Пиксель-хэмжилтээр (Downloads/А4.png дээр) баталгаажуулсан харьцаа: лого ~10%,
+// байгууллагын нэр ~34%, хаягийн мэдээлэл ~40% (үлдсэн хэсэг цоорхой) — 3 давхар блок.
 function letterheadPlaceholderHtml(){
   return '<div style="display:flex;flex-direction:column;align-items:stretch;height:100%;">' +
-    '<div style="border:1.5px dashed #e0393e;padding:4px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-bottom:6px;">' +
+    '<div style="border:1.5px dashed #e0393e;padding:4px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-bottom:8px;">' +
       soyomboIconSvg() +
     '</div>' +
-    '<div class="mongol-vertical" style="font-size:9.5pt;color:#2f6fd6;flex:1;">' + mongolLine('Байгууллагын нэр, хаяг (хэвлэмэл хуудсан дээр)') + '</div>' +
+    '<div class="mongol-vertical" style="font-size:9.5pt;color:#2f6fd6;flex:0 0 34%;overflow:hidden;">' + mongolLine('Байгууллагын нэр (хэвлэмэл хуудсан дээр)') + '</div>' +
+    '<div style="flex:0 0 10px;"></div>' +
+    '<div class="mongol-vertical" style="font-size:8pt;color:#2f6fd6;flex:1;overflow:hidden;">' + mongolLine('Хаяг, утас, цахим шуудан (хэвлэмэл хуудсан дээр)') + '</div>' +
   '</div>';
 }
 
