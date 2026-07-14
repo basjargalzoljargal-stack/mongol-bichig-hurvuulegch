@@ -115,6 +115,16 @@
     margin:0 1px;
   }
   .placeholder{color:var(--muted);font-size:13px;align-self:center;}
+  /* "Шууд хэвлэх" (window.print()) горим: дэлгэц дээр printArea үргэлж далд, харин хэвлэх
+     мэдэгдэлд (@media print) бусад бүх зүйлийг нуугаад зөвхөн printArea-г бодит мм хэмжээгээр
+     (px биш) харуулна — ингэснээр физик цаасан дээрх байрлал шууд тохирно. */
+  .print-only{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block !important;position:absolute;left:0;top:0;margin:0;padding:0;}
+    body{padding:0;margin:0;background:#fff;}
+  }
   .upload-row{
     border:1px dashed var(--border);
     border-radius:8px;
@@ -239,6 +249,11 @@
       </div>
     </div>
 
+    <!-- Зөвхөн хэвлэхэд (window.print()) ашиглагдах, бодит мм-хэмжээст хуудас — дэлгэц дээр
+         харагдахгүй (.print-only), гагцхүү @media print үед л screen дээрх бусад бүх зүйлийг
+         нуугаад үүнийг ЯГ ФИЗИК мм хэмжээгээр (px биш) хэвлэнэ. -->
+    <div id="printArea" class="print-only"></div>
+
     <div class="card full">
       <h2>3. Баримт бичгийн тохиргоо</h2>
       <!-- Хэрэглэгчийн шаардсанаар: албан бланкны лого/толгой хэсгийн зураг оруулах боломжийг
@@ -323,7 +338,12 @@
 
       <div class="row">
         <button onclick="downloadDocx()">Word файл татах (.docx)</button>
+        <button onclick="printPreview()" style="background:#3a7d3a;">🖨️ Шууд хэвлэх (Preview-ээс)</button>
         <span id="docxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
+      </div>
+      <div class="note">
+        🖨️ <b>"Шууд хэвлэх"</b> нь дэлгэц дээрх Preview-г ЯГ тэр хэлбэрээр нь (Word-гүйгээр) шууд принтерт илгээнэ. Хэрэв танд <b>хэвлэмэл хуудас (лого/байгууллагын нэр аль хэдийн хэвлэгдсэн цаас)</b> байгаа бол:
+        уг цаасаа принтертээ ачаалаад, хэвлэх цонх гарахад <b>Хуудасны хэмжээ (Paper size) = A4/A5, Чиглэл = Хэвтээ (Landscape), Зах (Margins) = Байхгүй/Хамгийн бага (None/Minimum), Хэмжээ (Scale) = 100%</b> болгож сонгоод хэвлээрэй — ингэснээр текст чинь хэвлэмэл цаасан дээрх зөв, хоосон газруудад буух болно. Word файл татах товч ч мөн адил зорилготой (зөвхөн текст, зурагг үй, Word дотор нэмж засварлах боломжтой).
       </div>
       <div class="note">
         ⚠️ Хөрвүүлэлт нь толь бичиг + үсэг тулгах зарчим хосолсон тул зарим (ялангуяа хувирсан/залгаварт) үг бүрэн 100% нарийвчлал баталгаагүй. Албан бичигт ашиглахын өмнө хянуулахыг зөвлөж байна. Тоо (0-9), латин үсэг, имэйл, %, огноо зэргийг босоо бичгийн урсгал дунд хэвтээгээр, зөв дараалалтай харуулахаар тусад нь тохируулсан (MonScript-ийн үнэгүй хувилбарт тоо алдаж байсан асуудлыг анхаарч). Word дээр нээгдэхэд бичиг зөв харагдахгүй бол "Mongolian Baiti" фонт суулгасан эсэхээ шалгана уу (Windows дээр стандартаар байдаг).
@@ -1127,6 +1147,60 @@ function renderPreview(){
     innerHtml +
     '</div>' +
     '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— ' + (isA5 ? 'А5' : 'А4') + ' хэвтээ (' + base.width + '×' + base.height + 'мм), зах: дээд ' + mT + 'мм / доод ' + mB + 'мм / зүүн ' + mL + 'мм / баруун ' + mR + 'мм —</div>';
+}
+
+// "Шууд хэвлэх" — renderPreview()-тэй яг ижил өгөгдлөөр (buildSidebarHtml), гэхдээ px
+// биш БОДИТ мм нэгжээр (@page-ийн физик хэмжээст шууд тохирно) #printArea-г дүүргэж,
+// window.print()-ийг дуудна. Хэрэглэгч Windows/Mac-ийн хэвлэх цонхонд Хуудасны хэмжээ
+// (A4/A5), Чиглэл (Хэвтээ), Зах (None/Minimum), Хэмжээ (100%) сонговол, хэвлэмэл (лого
+// хэвлэгдсэн) цаасан дээр текст яг зөв газраа буух ёстой.
+function printPreview(){
+  if (!lastConverted.trim()){
+    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
+    return;
+  }
+  const cat0 = document.getElementById('docCategory').value;
+  const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
+  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:25, marginBottom:15, marginLeft:15, marginRight:15 };
+  const readMm = (id, fallback) => {
+    const el = document.getElementById(id);
+    const v = el ? parseFloat(el.value) : NaN;
+    return (isFinite(v) && v >= 0) ? v : fallback;
+  };
+  const mT = readMm('marginTop', base.marginTop);
+  const mB = readMm('marginBottom', base.marginBottom);
+  const mL = readMm('marginLeft', base.marginLeft);
+  const mR = readMm('marginRight', base.marginRight);
+  const contentTop = mT, contentLeft = mL, contentRight = base.width - mR, contentBottom = base.height - mB;
+  const usableHeightMm = Math.max(0, contentBottom - contentTop);
+
+  const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml() : { cols: [] };
+  const cols = sidebar.cols || [];
+  let innerHtml = '';
+  let curLeftMm = contentLeft;
+  const GAPMM = 1.5;
+  cols.forEach(function(col){
+    const widthMm = Math.max(0, col.widthMm - GAPMM);
+    innerHtml += '<div style="position:absolute;left:' + curLeftMm + 'mm;top:' + contentTop + 'mm;width:' + widthMm + 'mm;height:' + usableHeightMm + 'mm;overflow:hidden;">' + col.html + '</div>';
+    curLeftMm += col.widthMm;
+  });
+  const bodyWidthMm = Math.max(0, contentRight - curLeftMm);
+  innerHtml += '<div style="position:absolute;left:' + curLeftMm + 'mm;top:' + contentTop + 'mm;width:' + bodyWidthMm + 'mm;height:' + usableHeightMm + 'mm;overflow:hidden;">' +
+    '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
+
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = '<div style="position:relative;width:' + base.width + 'mm;height:' + base.height + 'mm;background:#fff;">' + innerHtml + '</div>';
+
+  // @page хэмжээг тухайн цаасны хэмжээ (А4/А5, хэвтээ)-тэй динамикаар тааруулна
+  let pageStyleTag = document.getElementById('dynamicPageStyle');
+  if (!pageStyleTag){
+    pageStyleTag = document.createElement('style');
+    pageStyleTag.id = 'dynamicPageStyle';
+    document.head.appendChild(pageStyleTag);
+  }
+  pageStyleTag.textContent = '@page{ size:' + base.width + 'mm ' + base.height + 'mm; margin:0; }';
+
+  setTimeout(function(){ window.print(); }, 50);
 }
 
 function clearAll(){
