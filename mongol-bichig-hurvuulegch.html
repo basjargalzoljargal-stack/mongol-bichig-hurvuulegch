@@ -1299,7 +1299,11 @@ function buildSidebarHtml(){
       cols.push({ widthMm: 37, html: letterheadPlaceholderHtml() });
       let stackedHtml = '';
       if (addresseeRaw) stackedHtml += tag('Хэнд хандаж') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>';
-      if (subjectRaw) stackedHtml += tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center; margin-top:10mm;">' + mongolLine(subjectRaw) + '</div>';
+      // MNS 6395:2022 А2 хавсралтын хуудас 7-ын зурган схемийг пиксель хэмжилтээр (10,11
+      // тоймын тойрог) шалгахад: "10" (Хэнд хандах)-ийн төв ойролцоогоор баганы 35%-д,
+      // "11" (Тэргүү)-ийн төв ойролцоогоор 65%-д байрладаг тул хоорондын зайг өмнөх 10мм-ээс
+      // бодит ~35мм болгож нэмэгдүүлэв (Word загварт мөн 9 <w:br/> болгож тохирсон).
+      if (subjectRaw) stackedHtml += tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center; margin-top:35mm;">' + mongolLine(subjectRaw) + '</div>';
       if (stackedHtml) cols.push({ widthMm: 44, html: stackedHtml });
     }
     return { cols: cols };
