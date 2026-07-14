@@ -214,7 +214,7 @@
   </div>
 
   <div style="background:#fff3cd;border:2px solid #e6a700;border-radius:8px;padding:8px 14px;margin-bottom:12px;margin-top:10px;font-size:13px;font-weight:700;color:#7a5200;">
-    ⚙️ ХУВИЛБАР: v32 — 2026-07-14 (Вэб доторх Админы самбар нэмэгдсэн — хэрэглэгч нэмэх/идэвхгүй болгох/устгах). ⚠️ ЗААВАЛ: A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx загвар файлуудыг энэ html-тэй ИЖИЛ хавтсанд байрлуулж, ВЕБ СЕРВЕРЭЭР үзэх шаардлагатай (local file:// дээр fetch() ажиллахгүй). Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
+    ⚙️ ХУВИЛБАР: v33 — 2026-07-14 (Жинхэнэ Word загвар (.docx template) 3 файл холбогдсон + Захирамжийн маягт зөвхөн Тэргүү+Текст болгож хялбарчлагдсан). Word файл татах товч одоо бүрэн ажиллана. Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
   </div>
   <p class="subtitle">Кирилл бичгээр текст оруулаад, байгууллагын бланк дээр байрлуулсан бэлэн Word (.doc) файл татаж авна. Хөрвүүлэлт нь ~23,000 үгтэй толь бичигт (toli.query.mn) суурилсан тул түүхэн зөв бичлэгтэй илүү нийцтэй.</p>
 
@@ -284,30 +284,25 @@
         <div class="mns-hint">Дээрх 4 зах нь MNS 6395:2022, "А2 хавсралт" (хуудас 7)-ын зурган схемээс баталгаажуулсан тоо (дээд 25мм, бусад 15мм). Шаардлагатай бол өөрөө өөрчилж болно.</div>
 
         <div id="zahiramjlalFields" class="field-grid" style="margin-top:10px;">
-          <div>
-            <label>Байгууллага, албан тушаалын нэр</label>
-            <input type="text" id="orgTitle" placeholder="ИРГЭНИЙ НИСЭХИЙН ЕРӨНХИЙ ГАЗРЫН ДАРГЫН" oninput="renderPreview()">
-          </div>
-          <div>
-            <label>Баримт бичгийн нэр</label>
-            <select id="docKind" onchange="renderPreview()">
-              <option>ТУШААЛ</option>
-              <option>ШИЙДВЭР</option>
-              <option>ЗАХИРАМЖ</option>
-              <option>ТОГТООЛ</option>
-            </select>
-          </div>
-          <div>
-            <label>Хот/суурин</label>
-            <input type="text" id="cityName" value="Улаанбаатар хот" oninput="renderPreview()">
-          </div>
-          <div>
-            <label>Огноо, дугаар (хоосон орхивол зурааслаж бэлдэнэ)</label>
-            <input type="text" id="docDate" placeholder="жиш: 2026 оны 07 сарын 13 өдөр" oninput="renderPreview()">
-          </div>
+          <!-- Хэрэглэгчийн шаардсанаар: байгууллагын нэр/огноо/хот зэрэг нь ХЭВЛЭМЭЛ ХУУДАС
+               (жинхэнэ захирамжлалын бланк) дээр аль хэдийн хэвлэгдсэн байдаг тул программ
+               дахин хэвлэх шаардлагагүй — зөвхөн ТЭРГҮҮ, ГОЛ ТЕКСТ (дээрх 1-р талбар) 2-ыг л
+               бөглөнө. Доорх талбарууд preview/docx-ийн дотоод логикт зориулж нуугдмал
+               анхны утгатайгаар DOM-д үлдсэн (өөрчлөх шаардлагагүй).-->
           <div style="grid-column:1/-1;">
             <label>Тэргүү (§4.11, заавал биш) — А1 хавсралтын 3-р баганад орно</label>
             <input type="text" id="docSubjectZ" placeholder="жиш: Ажлын хэсэг байгуулах тухай" oninput="renderPreview()">
+          </div>
+          <div style="display:none;">
+            <input type="text" id="orgTitle" value="">
+            <select id="docKind">
+              <option>ЗАХИРАМЖ</option>
+              <option>ТУШААЛ</option>
+              <option>ШИЙДВЭР</option>
+              <option>ТОГТООЛ</option>
+            </select>
+            <input type="text" id="cityName" value="Улаанбаатар хот">
+            <input type="text" id="docDate" value="">
           </div>
         </div>
 
