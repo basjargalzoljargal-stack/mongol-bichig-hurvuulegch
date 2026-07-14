@@ -999,16 +999,21 @@ function renderPreview(){
   const contentBottom = base.height - mB;
   const usableHeightMm = Math.max(0, contentBottom - contentTop);
 
+  // Хэрэглэгчийн өгсөн жинхэнэ засварлагчийн зурган жишээнүүд (Downloads/А4.png, А5.png,
+  // Захирамжлал.png) дээр тус бүрдэл (лого, байгууллагын нэр, хэнд хандах, тэргүү, гол
+  // бичвэр) БҮГД өөрийн гэсэн ЦАЙВАР ХҮРЭЭТЭЙ (rounded, light-gray) хайрцганд тусдаа
+  // байрладаг — үүнийг ЯГ дуурайлгаж, багана бүрийг иймэрхүү "талбарын хайрцаг" болгов.
+  const FIELD_GAP_PX = 6; // хайрцаг хоорондын цайвар зай
   const cols = sidebar.cols || [];
   let innerHtml = '';
   let curLeftMm = contentLeft;
   cols.forEach(function(col){
     const leftPx = Math.round(curLeftMm * pxPerMm);
     const topPx = Math.round(contentTop * pxPerMm);
-    const widthPx = Math.round(col.widthMm * pxPerMm);
+    const widthPx = Math.max(0, Math.round(col.widthMm * pxPerMm) - FIELD_GAP_PX);
     const heightPx = Math.round(usableHeightMm * pxPerMm);
     innerHtml += '<div style="position:absolute;left:' + leftPx + 'px;top:' + topPx + 'px;width:' + widthPx + 'px;height:' + heightPx + 'px;' +
-      'border-right:1px dashed #dbe1e8;padding-right:4px;box-sizing:border-box;overflow:hidden;">' + col.html + '</div>';
+      'border:1px solid #dbe1e8;border-radius:6px;background:#fff;padding:5px;box-sizing:border-box;overflow:hidden;">' + col.html + '</div>';
     curLeftMm += col.widthMm;
   });
 
@@ -1016,7 +1021,8 @@ function renderPreview(){
   const bodyTopPx = Math.round(contentTop * pxPerMm);
   const bodyWidthPx = Math.max(0, Math.round((contentRight - curLeftMm) * pxPerMm));
   const bodyHeightPx = Math.round(usableHeightMm * pxPerMm);
-  innerHtml += '<div style="position:absolute;left:' + bodyLeftPx + 'px;top:' + bodyTopPx + 'px;width:' + bodyWidthPx + 'px;height:' + bodyHeightPx + 'px;overflow:hidden;">' +
+  innerHtml += '<div style="position:absolute;left:' + bodyLeftPx + 'px;top:' + bodyTopPx + 'px;width:' + bodyWidthPx + 'px;height:' + bodyHeightPx + 'px;' +
+    'border:1px solid #e8ebee;border-radius:6px;padding:6px;box-sizing:border-box;overflow:hidden;">' +
     '<div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
 
   box.innerHTML =
@@ -1118,10 +1124,15 @@ function mongolDateLine(rawValue){
 // Бодит хэвлэмэл хуудсан дээр аль хэдийн байдаг (лого + байгууллагын нэр) хэсгийг зөвхөн
 // ДУУРАЙЛГАЖ, цэнхэр өнгөөр Preview дээр харуулна (жинхэнэ MonScript загварын өнгөт схемтэй
 // адилтгав) — энэ бол зөвхөн дэлгэцний дүрслэл, .docx файлд шидэгдэхгүй.
+// Хэрэглэгчийн өгсөн жинхэнэ засварлагчийн зурган жишээ (Downloads/А4.png, А5.png,
+// Захирамжлал.png) дээр: лого нь УЛААН ЗУРААС (dashed) хүрээтэй тусдаа жижиг блок,
+// байгууллагын нэр нь доор нь цэнхэр өнгөөр — үүнийг ЯГ адилхан дуурайлгав.
 function letterheadPlaceholderHtml(){
-  return '<div style="display:flex;flex-direction:column;align-items:center;height:100%;">' +
-    '<div style="width:22px;height:22px;background:#1a5fb4;border-radius:3px;margin-bottom:4px;flex:0 0 auto;"></div>' +
-    '<div class="mongol-vertical" style="font-size:10pt;color:#3f7fd1;">' + mongolLine('Байгууллагын нэр, хаяг (хэвлэмэл хуудсан дээр)') + '</div>' +
+  return '<div style="display:flex;flex-direction:column;align-items:stretch;height:100%;">' +
+    '<div style="border:1.5px dashed #e0393e;border-radius:4px;padding:4px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-bottom:6px;">' +
+      '<svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#1a5fb4"/><circle cx="10" cy="6" r="2" fill="#fff"/><rect x="8.5" y="9" width="3" height="7" fill="#fff"/></svg>' +
+    '</div>' +
+    '<div class="mongol-vertical" style="font-size:9.5pt;color:#2f6fd6;flex:1;">' + mongolLine('Байгууллагын нэр, хаяг (хэвлэмэл хуудсан дээр)') + '</div>' +
   '</div>';
 }
 
