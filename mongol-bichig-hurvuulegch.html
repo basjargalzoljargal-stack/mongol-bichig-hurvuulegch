@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кирилл → Монгол бичиг хөрвүүлэгч (Бланктай)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mongolian&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#1a5fb4;
+    --blue-dark:#0f3d78;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#dfe4ea;
+    --text:#1c2530;
+    --muted:#667085;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:24px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .subtitle{color:var(--muted);margin:0 0 24px;font-size:14px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:800px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px;
+  }
+  .card h2{font-size:15px;margin:0 0 12px;color:var(--blue-dark);}
+  textarea{
+    width:100%;
+    min-height:160px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px;
+    font-size:15px;
+    font-family:inherit;
+    resize:vertical;
+  }
+  .row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .spell-box{
+    margin-top:12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px;
+    font-size:15px;
+    line-height:1.7;
+    background:#fafbfc;
+    white-space:pre-wrap;
+  }
+  .spell-box mark{
+    background:#ffe3e3;
+    color:#b3261e;
+    border-bottom:2px solid #e35d5d;
+    padding:0 1px;
+    border-radius:2px;
+  }
+  button{
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-size:14px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  button:hover{background:var(--blue-dark);}
+  button.secondary{
+    background:#fff;
+    color:var(--blue);
+    border:1px solid var(--blue);
+  }
+  button.secondary:hover{background:#eef4ff;}
+  .preview-box{
+    min-height:280px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:24px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    background:#fffdf7;
+    background-image:linear-gradient(#f2ecdb 1px, transparent 1px);
+    background-size:100% 28px;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,0.04);
+    overflow-x:auto;
+  }
+  .mongol-vertical{
+    writing-mode: vertical-lr;
+    -webkit-writing-mode: vertical-lr;
+    font-family:'Mongolian Baiti','Noto Sans Mongolian',sans-serif;
+    font-size:30px;
+    letter-spacing:2px;
+    line-height:1.7;
+    min-height:240px;
+    white-space:pre-wrap;
+    color:#20262e;
+  }
+  /* Тоо (араб цифр) болон латин үгсийг босоо урсгал дотор хэвтээгээр, зөв дараалалтай харуулна */
+  .mongol-vertical .num-run{
+    display:inline-block;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    letter-spacing:0;
+    margin:0 1px;
+  }
+  .placeholder{color:var(--muted);font-size:13px;align-self:center;}
+  .upload-row{
+    border:1px dashed var(--border);
+    border-radius:8px;
+    padding:14px;
+    text-align:center;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:12px;
+  }
+  #letterheadPreview{max-width:100%;max-height:90px;margin-top:8px;border-radius:4px;}
+  .mns-fields{
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px;
+    margin-bottom:12px;
+    background:#fbfcfe;
+  }
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+  @media (max-width:800px){.field-grid{grid-template-columns:1fr;}}
+  .field-grid label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:3px;}
+  .mns-fields select, .mns-fields input[type=text]{
+    width:100%;
+    padding:7px 9px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-size:13.5px;
+    font-family:inherit;
+    background:#fff;
+  }
+  .mns-hint{font-size:12px;color:var(--muted);margin-top:6px;}
+  .note{
+    font-size:12.5px;
+    color:var(--muted);
+    background:#fff8e6;
+    border:1px solid #f4dfa0;
+    border-radius:8px;
+    padding:10px 12px;
+    margin-top:16px;
+    line-height:1.5;
+  }
+  .full{grid-column:1/-1;}
+  label.filelabel{
+    display:inline-block;
+    background:#eef4ff;
+    color:var(--blue-dark);
+    border:1px solid var(--blue);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Кирилл → Монгол бичиг хөрвүүлэгч</h1>
+  <div style="background:#fff3cd;border:2px solid #e6a700;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:13px;font-weight:700;color:#7a5200;">
+    ⚙️ ХУВИЛБАР: v30 — 2026-07-14 (Word ЗАГВАР (.docx template) + docxtemplater ашигладаг болсон — гараар угсарсан OOXML аргыг орхив). ⚠️ ЗААВАЛ: A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx загвар файлуудыг энэ html-тэй ИЖИЛ хавтсанд байрлуулж, ВЕБ СЕРВЕРЭЭР үзэх шаардлагатай (local file:// дээр fetch() ажиллахгүй). Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
+  </div>
+  <p class="subtitle">Кирилл бичгээр текст оруулаад, байгууллагын бланк дээр байрлуулсан бэлэн Word (.doc) файл татаж авна. Хөрвүүлэлт нь ~23,000 үгтэй толь бичигт (toli.query.mn) суурилсан тул түүхэн зөв бичлэгтэй илүү нийцтэй.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1. Кирилл текст</h2>
+      <textarea id="inputText" placeholder="Жишээ: Монгол Улсын Засгийн газар...">Монгол Улс</textarea>
+      <div class="row">
+        <button onclick="checkSpelling()">① Алдаа шалгах</button>
+        <button onclick="convertText()">② Хөрвүүлэх</button>
+        <button class="secondary" onclick="clearAll()">Цэвэрлэх</button>
+      </div>
+      <div id="spellBox" class="spell-box" style="display:none;"></div>
+      <div id="spellStat" style="margin-top:6px;font-size:12.5px;color:var(--muted);"></div>
+      <div id="dictStat" style="margin-top:4px;font-size:12.5px;color:var(--muted);"></div>
+    </div>
+
+    <div class="card">
+      <h2>2. Монгол бичгийн урьдчилсан харагдац</h2>
+      <div class="preview-box" id="previewBox">
+        <span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <h2>3. Баримт бичгийн тохиргоо</h2>
+      <!-- Хэрэглэгчийн шаардсанаар: албан бланкны лого/толгой хэсгийн зураг оруулах боломжийг
+           хассан — жинхэнэ ХЭРЭГЛЭЭНД баримт бичгийг цаанаасаа лого хэвлэгдсэн (хэвлэмэл)
+           хуудсан дээр шууд хэвлэдэг тул программ өөрөө лого зурж оруулах шаардлагагүй. -->
+      <div class="mns-fields">
+        <div class="field-grid">
+          <div>
+            <label>Цаасны хэмжээ (MNS 6395:2022, §3.1 — үргэлж хэвтээ)</label>
+            <select id="paperSize" onchange="applyPaperDefaults()">
+              <option value="A4">А4 (297мм × 210мм, хэвтээ)</option>
+              <option value="A5">А5 (210мм × 148мм, хэвтээ)</option>
+            </select>
+          </div>
+          <div>
+            <label>Баримт бичгийн ангилал</label>
+            <select id="docCategory" onchange="toggleDocFields()">
+              <option value="zahiramjlal">Захирамжлалын (Тушаал/Шийдвэр/Захирамж/Тогтоол)</option>
+              <option value="albanbichig">Албан бичиг</option>
+              <option value="none">Ямар ч бүрдэл нэмэхгүй (зөвхөн бичиг)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-grid" style="margin-top:10px;">
+          <div>
+            <label>Зах, дээд (мм)</label>
+            <input type="text" id="marginTop" value="25" oninput="renderPreview()">
+          </div>
+          <div>
+            <label>Зах, доод (мм)</label>
+            <input type="text" id="marginBottom" value="15" oninput="renderPreview()">
+          </div>
+          <div>
+            <label>Зах, зүүн (мм)</label>
+            <input type="text" id="marginLeft" value="15" oninput="renderPreview()">
+          </div>
+          <div>
+            <label>Зах, баруун (мм)</label>
+            <input type="text" id="marginRight" value="15" oninput="renderPreview()">
+          </div>
+        </div>
+        <div class="mns-hint">Дээрх 4 зах нь MNS 6395:2022, "А2 хавсралт" (хуудас 7)-ын зурган схемээс баталгаажуулсан тоо (дээд 25мм, бусад 15мм). Шаардлагатай бол өөрөө өөрчилж болно.</div>
+
+        <div id="zahiramjlalFields" class="field-grid" style="margin-top:10px;">
+          <div>
+            <label>Байгууллага, албан тушаалын нэр</label>
+            <input type="text" id="orgTitle" placeholder="ИРГЭНИЙ НИСЭХИЙН ЕРӨНХИЙ ГАЗРЫН ДАРГЫН" oninput="renderPreview()">
+          </div>
+          <div>
+            <label>Баримт бичгийн нэр</label>
+            <select id="docKind" onchange="renderPreview()">
+              <option>ТУШААЛ</option>
+              <option>ШИЙДВЭР</option>
+              <option>ЗАХИРАМЖ</option>
+              <option>ТОГТООЛ</option>
+            </select>
+          </div>
+          <div>
+            <label>Хот/суурин</label>
+            <input type="text" id="cityName" value="Улаанбаатар хот" oninput="renderPreview()">
+          </div>
+          <div>
+            <label>Огноо, дугаар (хоосон орхивол зурааслаж бэлдэнэ)</label>
+            <input type="text" id="docDate" placeholder="жиш: 2026 оны 07 сарын 13 өдөр" oninput="renderPreview()">
+          </div>
+          <div style="grid-column:1/-1;">
+            <label>Тэргүү (§4.11, заавал биш) — А1 хавсралтын 3-р баганад орно</label>
+            <input type="text" id="docSubjectZ" placeholder="жиш: Ажлын хэсэг байгуулах тухай" oninput="renderPreview()">
+          </div>
+        </div>
+
+        <div id="albanbichigFields" class="field-grid" style="margin-top:10px;display:none;">
+          <!-- Хэрэглэгчийн шаардсанаар: байгууллагын нэр/хаяг/огноо/дугаар/хариутай зэрэг нь
+               ХЭВЛЭМЭЛ ХУУДАС (жинхэнэ албан бланк) дээр аль хэдийн хэвлэгдсэн байдаг тул
+               программ дахин хэвлэх шаардлагагүй — зөвхөн хуудсан дээр байхгүй, ХАРИЛЦАН
+               БИЧИГ БҮРТ өөр байх 2 зүйл (хэнд хандах, тэргүү)-ийг л бөглөнө. -->
+          <div style="grid-column:1/-1;">
+            <label>Хэнд хандаж бичиж байна (жиш: "ГААЛИЙН ЕРӨНХИЙ ГАЗРЫН ДАРГА Ц.АСРАЛТ ТАНАА") — заавал биш, хоосон орхивол харагдахгүй</label>
+            <input type="text" id="addresseeName" placeholder="жиш: ГААЛИЙН ЕРӨНХИЙ ГАЗРЫН ДАРГА Ц.АСРАЛТ ТАНАА" oninput="renderPreview()">
+          </div>
+          <div style="grid-column:1/-1;">
+            <label>Тэргүү (жиш: "Хүсэлт хүргүүлэх тухай", "Санал ирүүлэх тухай") — энэ талбарыг мөн Кирилл бичээрэй, автоматаар монгол бичигт хөрвүүлнэ</label>
+            <input type="text" id="docSubject" placeholder="жиш: Хүсэлт хүргүүлэх тухай" oninput="renderPreview()">
+          </div>
+        </div>
+
+      <div class="row">
+        <button onclick="downloadDocx()">Word файл татах (.docx)</button>
+        <span id="docxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
+      </div>
+      <div class="note">
+        ⚠️ Хөрвүүлэлт нь толь бичиг + үсэг тулгах зарчим хосолсон тул зарим (ялангуяа хувирсан/залгаварт) үг бүрэн 100% нарийвчлал баталгаагүй. Албан бичигт ашиглахын өмнө хянуулахыг зөвлөж байна. Тоо (0-9), латин үсэг, имэйл, %, огноо зэргийг босоо бичгийн урсгал дунд хэвтээгээр, зөв дараалалтай харуулахаар тусад нь тохируулсан (MonScript-ийн үнэгүй хувилбарт тоо алдаж байсан асуудлыг анхаарч). Word дээр нээгдэхэд бичиг зөв харагдахгүй бол "Mongolian Baiti" фонт суулгасан эсэхээ шалгана уу (Windows дээр стандартаар байдаг).
+        <br><br>📐 Цаасны зах (margin), чиглэл (үргэлж хэвтээ), бичвэрийн фонтын хэмжээг <b>MNS 6395:2022</b> стандартад заасан хэмжээгээр (А4/А5 хэвтээ: дээд 25мм, доод/зүүн/баруун 15мм тус тус; бичвэр 17pt) автоматаар тохируулна. Захирамжлал/албан бичгийн толгой хэсгийг мөн стандартын А1/А2 хавсралтын схемийн дагуу зүүн талын баганад байрлуулна. Гэхдээ БАТЛАВ/ЗӨВШӨӨРӨВ тэмдэглэл, гарын үсэг, тамганы байрлал зэрэг бусад бүрдлийг та Word дотор гараар нэмэх хэрэгтэйг анхаарна уу.
+      </div>
+    </div>
+
+    <div class="card full">
+      <h2>4. Хянасан / Боловсруулсан / Хувь тэмдэглэл (тусад нь хэвлэх)</h2>
+      <!-- Дугаарлалт хэвээр (4) — бүрдлүүдийн дараалал хадгалагдана -->
+
+      <p class="subtitle" style="margin:0 0 10px;">MNS 5140-2:2021: энэ тэмдэглэлийг баримт бичгийн <b>сүүлийн хуудасны арын зүүн доод хэсэгт, зүүн захаас 15мм, доод захаас 15мм</b> зайтай байрлуулна. Үндсэн бичвэрийн урсгал дотор яг энэ буланд нарийвчлан бэхлэх нь техникийн хувьд тогтворгүй тул үүнийг ТУСДАА жижиг файл болгож, та үндсэн бичгээ хэвлүүлсний дараа ар талд нь дахин хэвлэж болно.</p>
+      <div class="mns-fields">
+        <div class="field-grid">
+          <div>
+            <label>Боловсруулсан (нэр)</label>
+            <input type="text" id="preparedBy" placeholder="заавал биш">
+          </div>
+          <div>
+            <label>Хянасан (нэр)</label>
+            <input type="text" id="checkedBy" placeholder="заавал биш">
+          </div>
+          <div>
+            <label>Хувь (жиш: "Хувь 3")</label>
+            <input type="text" id="copyNote" placeholder="заавал биш">
+          </div>
+          <div>
+            <label>Цаасны хэмжээ</label>
+            <select id="notePaperSize">
+              <option value="A4">А4 (297мм × 210мм, хэвтээ)</option>
+              <option value="A5">А5 (210мм × 148мм, хэвтээ)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button onclick="downloadNoteDocx()">Тэмдэглэл хэвлэх (.docx)</button>
+        <span id="noteDocxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="mongol-dict-data.js"></script>
+<script src="mongol-wordlist.js"></script>
+<script src="mongol-dict-extra.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<!-- Хэрэглэгчийн шаардсанаар: Word ЗАГВАР (template) файл дээр {{хувьсагч}} орлуулах аргаар
+     .docx үүсгэхийн тулд PizZip + docxtemplater ашиглана. Загвар файлуудыг сервер дээрээс
+     fetch()-ээр татах тул ЭНЭ ХЭСЭГ ЗӨВХӨН ВЕБ СЕРВЕР ДЭЭР БАЙРШУУЛСАН үед ажиллана
+     (local file:// дээр шууд нээвэл fetch() CORS алдаатай — хэрэглэгч үүнийг мэднэ). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.44.0/docxtemplater.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script>
+// ===== Зөв бичгийн алдаа шалгагч =====
+// WORDLIST глобал Set нь mongol-wordlist.js файлаас ачаалагдана (~46,000 үг)
+// Кирилл хэлний залгамал (агглютинатив) байдлаас болж тольд байхгүй хувирсан хэлбэрүүдийг
+// бүрэн тайлахын тулд нийтлэг төгсгөлүүдийг оролдож шалгана (энгийн санамсаргүй арга, 100% биш)
+const COMMON_SUFFIXES = [
+  'ууд','үүд','нууд','нүүд','гуудад','гүүдэд',
+  'ыг','ийг','г',
+  'ын','ийн','ы','н',
+  'аас','ээс','оос','өөс','с',
+  'аар','ээр','оор','өөр','р',
+  'тай','тэй','той','гүй',
+  'даа','дээ','доо','дөө','лаа','лээ','лоо','лөө',
+  'сан','сэн','сон','сөн',
+  'на','нэ','но','нө',
+  'ж','ч','сан','маар','мээр',
+  'уулаа','үүлээ','лаа','лээ',
+  'д','т','нд',
+  // нөхцөлт (болзолт) сул: орвол, дарвал, гэвэл гэх мэт
+  'вал','вэл','вол','вөл','бал','бэл','бол','бөл'
+];
+
+// Node-оор шалгаж баталгаажуулахад "болон", "руу", "гэсэн", "байна" мэтийн МАШ түгээмэл
+// холбох үг/өгүүлбэрийн нөхцөл, тусгай нэр байхгүй болох нь тогтоогдсон — учир нь эх толь
+// (toli.query.mn) болон HBUZ-Toli толь хоёулаа "толгой үг" (агуулгын үг)-ийг жагсаадаг тул
+// энгийн холбоос/өгүүлбэрийн нөхцөлийн үгсийг оруулаагүй байна. Иймд хамгийн түгээмэл
+// холбоос, тодотгол, төлөөний үг, туслах үйл үгсийг гараар нэмж, худал эерэг алдааг багасгав.
+const COMMON_FUNCTION_WORDS = new Set([
+  'болон','харин','гэхдээ','мөн','эсвэл','буюу','тул','учир','тиймээс','гэвч',
+  'бол','бөгөөд','юм','гэж','гэсэн','гэдэг','гэх','гэхэд','гэхээр',
+  'байна','байгаа','байсан','байх','байлаа','байдаг','байхгүй','байгаагүй',
+  'болно','болов','болсон','болж','болох','болохгүй',
+  'нь','энэ','тэр','эдгээр','тэдгээр','ийм','тийм','ямар','ямар нэгэн',
+  'хэн','юу','хаана','хэзээ','яагаад','хэрхэн','хэдэн','хэд','аль',
+  'би','чи','та','бид','танай','манай','өөрийн','өөрсдийн',
+  'руу','рүү','луу','лүү','тай','той','тэй','гүй','шиг','хүртэл','дотор','гадна',
+  'хийх','хийсэн','хийж','хийгээд','хийдэг',
+  'өгөх','өгсөн','өгч','авах','авсан','авч',
+  'зэрэг','зэргийг','дараа','өмнө','үед','тухай','талаар',
+  'дээр','дор','доор','ард','урд','хажууд',
+  'учраас','тухайд','хамт','хамтран'
+]);
+
+const MONGOL_VOWELS = ['а','о','у','ы','и','э','ө','ү'];
+
+// Монгол хэлний эгшиг унах (гийгүүлэгч төгсгөх) үзэгдлийг (жиш: ажил+ыг → ажлыг) энгийнээр
+// тайлах — стем нь 2 гийгүүлэгчээр төгсвөл, тэдгээрийн хооронд эгшиг нэмж (ажл → ажил гэх мэт)
+// толь/жагсаалтаас олдох эсэхийг шалгана. 100% зөв биш, гэхдээ ихэнх тохиолдолд алдааг багасгана.
+function tryVowelInsertion(stem){
+  if (stem.length < 3) return false;
+  const c1 = stem[stem.length - 2], c2 = stem[stem.length - 1];
+  if (MONGOL_VOWELS.includes(c1) || MONGOL_VOWELS.includes(c2)) return false; // аль хэдийн эгшигтэй бол оролдохгүй
+  const base = stem.slice(0, -1);
+  for (const v of MONGOL_VOWELS){
+    const candidate = base + v + c2;
+    if (WORDLIST.has(candidate) || DICT[candidate]) return true;
+  }
+  return false;
+}
+
+// Толь бичиг үйл үгийг ЗААВАЛ тодорхойлолт (инфинитив, "-ах/-эх/-их" төгсгөлтэй) хэлбэрээр
+// хадгалдаг тул "анхааруулах"-ын язгуур "анхааруул" гэдэг стем толинд ганцаараа байдаггүй.
+// Иймд стемд төгсгөл нэмж (анхааруул+ах=анхааруулах) толь/жагсаалтаас олохыг оролдоно.
+const INFINITIVE_ENDINGS = ['ах','эх','их','ох','өх','ух','үх'];
+function tryInfinitiveForm(stem){
+  if (stem.length < 2) return false;
+  for (const e of INFINITIVE_ENDINGS){
+    if (WORDLIST.has(stem + e) || DICT[stem + e]) return true;
+  }
+  return false;
+}
+
+// "асуухгүйгээр" (асуух+гүй+гээр) мэтийн ХОЛИМОГ (нэгээс олон) залгавартай үгийг нэг
+// давхаргаар (single-pass) тайлж чадахгүй тул рекурсив байдлаар (дээд тал нь 3 давхарга)
+// давхар залгавар цуулж, язгуурыг олох хүртэл оролдоно.
+function isKnownStem(lower, depth){
+  if (WORDLIST.has(lower) || DICT[lower]) return true;
+  if (lower.length <= 2) return false;
+  if (tryVowelInsertion(lower)) return true;
+  if (tryInfinitiveForm(lower)) return true;
+  if (depth <= 0) return false;
+  for (const suf of COMMON_SUFFIXES){
+    if (lower.endsWith(suf)){
+      const stem = lower.slice(0, lower.length - suf.length);
+      if (stem.length >= 2 && isKnownStem(stem, depth - 1)) return true;
+    }
+  }
+  return false;
+}
+
+function isKnownWord(lower){
+  if (!lower) return true;
+  if (WORDLIST.has(lower)) return true;
+  if (DICT[lower]) return true;
+  if (COMMON_FUNCTION_WORDS.has(lower)) return true;
+  // хэт богино (1-2 үсэг) үгсийг алдаа гэж тэмдэглэхгүй
+  if (lower.length <= 2) return true;
+  // Кирилл бус (латин, тоо гэх мэт) токенийг Монгол зөв бичгийн алдаа гэж шалгахгүй
+  // (жиш нь "google", "yes" гэх мэт гадаад/латин үгс)
+  if (!/[а-яөүёА-ЯӨҮЁ]/.test(lower)) return true;
+  // "асуухгүйгээр" мэт олон давхар залгавартай үгийг рекурсивээр (3 давхар хүртэл) шалгана
+  if (isKnownStem(lower, 3)) return true;
+  return false;
+}
+
+// Хоёр үгийн хоорондох Левенштейний зайг (нэг үсэг нэмэх/хасах/солиход = 1 алхам) тооцоолно.
+// Санал болгох ойролцоо үгсийг олоход ашиглана.
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  let prev = new Array(n + 1);
+  let cur = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++){
+    cur[0] = i;
+    for (let j = 1; j <= n; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + cost);
+    }
+    [prev, cur] = [cur, prev];
+  }
+  return prev[n];
+}
+
+// Танигдаагүй үгэнд ойролцоо (эхний үсэг ижил, урт ойролцоо) 1-3 санал олж өгнө.
+// Хайлтыг хурдан байлгахын тулд эхний үсэг болон уртын зөрүүгээр эхлээд шүүнэ.
+function suggestSimilar(lower){
+  if (!lower || lower.length < 3) return [];
+  const firstCh = lower[0];
+  const maxLenDiff = 2;
+  const candidates = [];
+  for (const w of WORDLIST){
+    if (w[0] !== firstCh) continue;
+    if (Math.abs(w.length - lower.length) > maxLenDiff) continue;
+    candidates.push(w);
+  }
+  const scored = candidates.map(w => ({ w, d: levenshtein(lower, w) }))
+    .filter(x => x.d > 0 && x.d <= 2)
+    .sort((a, b) => a.d - b.d);
+  const seen = new Set();
+  const out = [];
+  for (const s of scored){
+    if (seen.has(s.w)) continue;
+    seen.add(s.w);
+    out.push(s.w);
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+
+let lastUnknownWords = [];
+
+function checkSpelling(){
+  const src = document.getElementById('inputText').value;
+  const box = document.getElementById('spellBox');
+  const stat = document.getElementById('spellStat');
+  if (!src.trim()){
+    box.style.display = 'none';
+    stat.textContent = '';
+    lastUnknownWords = [];
+    renderSpellSuggestions();
+    return;
+  }
+  const unknown = [];
+  const html = src.split(/(\s+)/).map(tok => {
+    if (/^\s*$/.test(tok)) return tok;
+    const bare = tok.replace(/^[^\wа-яөүёА-ЯӨҮЁ]+|[^\wа-яөүёА-ЯӨҮЁ]+$/g, '');
+    if (!bare) return escapeHtml(tok);
+    const lower = bare.toLowerCase();
+    const start = tok.indexOf(bare);
+    const lead = escapeHtml(tok.slice(0, start));
+    const trail = escapeHtml(tok.slice(start + bare.length));
+    if (!isKnownWord(lower)){
+      unknown.push(lower);
+      return lead + '<mark title="Толь/жагсаалтад олдсонгүй">' + escapeHtml(bare) + '</mark>' + trail;
+    }
+    return escapeHtml(tok);
+  }).join('');
+
+  box.style.display = 'block';
+  box.innerHTML = html;
+
+  // давхардсан үгсийг арилгана
+  lastUnknownWords = [...new Set(unknown)];
+
+  if (lastUnknownWords.length === 0){
+    stat.textContent = '✅ Толинд танигдаагүй үг олдсонгүй.';
+    stat.style.color = '#1a7f37';
+  } else {
+    stat.textContent = '⚠️ Танигдаагүй ' + lastUnknownWords.length + ' үг олдлоо. Шалтгаан: тухайн үг манай ~46,000 үгийн жагсаалт болон толь бичигт (ямар ч залгаварын хэлбэрээр) байхгүй байна — шинэ үг, нэр үг, эсвэл алдаатай бичигдсэн байж болзошгүй. Доор ойролцоо санал харуулав:';
+    stat.style.color = '#b3261e';
+  }
+  renderSpellSuggestions();
+}
+
+// Танигдаагүй үг бүрийн доор ойролцоо (Левенштейний зайгаар олдсон) 1-3 санал үгийг жагсааж харуулна
+function renderSpellSuggestions(){
+  let sugBox = document.getElementById('spellSuggestBox');
+  if (!sugBox){
+    sugBox = document.createElement('div');
+    sugBox.id = 'spellSuggestBox';
+    sugBox.style.marginTop = '8px';
+    sugBox.style.fontSize = '13px';
+    const spellStat = document.getElementById('spellStat');
+    spellStat.parentNode.insertBefore(sugBox, spellStat.nextSibling);
+  }
+  if (!lastUnknownWords.length){
+    sugBox.innerHTML = '';
+    return;
+  }
+  sugBox.innerHTML = lastUnknownWords.map(w => {
+    const sug = suggestSimilar(w);
+    const sugText = sug.length
+      ? sug.map(s => '<span style="cursor:pointer;color:var(--blue);text-decoration:underline;" onclick="replaceWordInInput(\'' + w.replace(/'/g,"\\'") + '\',\'' + s.replace(/'/g,"\\'") + '\')">' + escapeHtml(s) + '</span>').join(', ')
+      : '<span style="color:var(--muted);">ойролцоо үг олдсонгүй</span>';
+    return '<div style="margin-bottom:3px;"><b>' + escapeHtml(w) + '</b> → ' + sugText + '</div>';
+  }).join('');
+}
+
+// Санал дээр дарахад оруулах текст дотрох тухайн үгийг сольж өгнө (бүх давхцлыг сольно)
+function replaceWordInInput(oldLower, newWord){
+  const ta = document.getElementById('inputText');
+  const re = new RegExp('(^|[^\\wа-яөүёА-ЯӨҮЁ])(' + oldLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')($|[^\\wа-яөүёА-ЯӨҮЁ])', 'giu');
+  ta.value = ta.value.replace(re, (m, p1, p2, p3) => {
+    // үгийн эхний үсгийн том/жижигийг хадгална
+    const repl = (p2[0] === p2[0].toUpperCase() && p2[0] !== p2[0].toLowerCase())
+      ? (newWord[0].toUpperCase() + newWord.slice(1))
+      : newWord;
+    return p1 + repl + p3;
+  });
+  checkSpelling();
+}
+
+// Толинд байхгүй үгэнд зориулсан энгийн үсэг-үсгийн зураглал (нөөц/fallback)
+// DICT глобал хувьсагч нь mongol-dict-data.js файлаас ачаалагдана (~23,000 үг)
+const charMap = {
+  'а':'ᠠ','б':'ᠪ','в':'ᠸ','г':'ᠭ','д':'ᠳ','е':'ᠶᠡ','ё':'ᠶᠣ','ж':'ᠵ','з':'ᠵ',
+  'и':'ᠢ','й':'ᠢ','к':'ᠺ','л':'ᠯ','м':'ᠮ','н':'ᠨ','о':'ᠣ','ө':'ᠥ','п':'ᠫ',
+  'р':'ᠷ','с':'ᠰ','т':'ᠲ','у':'ᠤ','ү':'ᠦ','ф':'ᠹ','х':'ᠬ','ц':'ᠴ','ч':'ᠴ',
+  'ш':'ᠱ','щ':'ᠱ','ъ':'ᠢ','ы':'ᠢ','ь':'ᠢ','э':'ᠡ','ю':'ᠶᠦ','я':'ᠶᠠ'
+};
+
+function charByChar(word){
+  let out = '';
+  for (const ch of word.toLowerCase()){
+    out += charMap[ch] || ch;
+  }
+  return out;
+}
+
+let dictHits = 0, dictMisses = 0;
+const WORD_RE = /[^\wа-яөүёА-ЯӨҮЁ]+/;
+
+// === Эгшиг зохицол (эрэгтэй/эмэгтэй) — генитив (харьяалах) тийн ялгалын ЗАСВАР ===
+// Хэрэглэгчийн MonScript-тэй тулгаж баталгаажуулсан жишээ: "Болод-ын" (эрэгтэй, о — арын
+// эгшиг) → "ᠪᠣᠯᠤᠳ᠎ᠤᠨ" (гэдэг мэт, зай/MVS+ᠤᠨ). Монгол бичигт эрхийн залгавар тусдаа "үет"
+// байдлаар (U+180E MVS зайгаар) орж, язгуурын эгшиг зохицлоос хамааран ХОЁР өөр хэлбэртэй:
+// эрэгтэй (арын: а/о/у) язгуурт — ᠤᠨ, эмэгтэй (урдын: э/ө/ү) язгуурт — ᠡᠶᠢᠨ. (Unicode-ийн
+// Монгол бичгийн орфографийн тэмдэглэлээс: -ATR (арын/эрэгтэй) а,о,у; +ATR (урдын/эмэгтэй)
+// э,ө,ү; и/й саармаг.) АНХААР: энэ бол миний гаргаж авсан хамгийн сайн ойролцоолол — хэрэв
+// тодорхой тохиолдол өөрөөр гарвал засаж болно.
+const GENITIVE_SUFFIX = { m: '᠎ᠤᠨ', f: '᠎ᠡᠶᠢᠨ' };
+// Зөвхөн ЭНЭ жагсаалтад байгаа Кирилл эрхийн залгаврыг л дээрх 2 хэлбэрт хөрвүүлнэ (бусад
+// тийн ялгал — өгөх/чиглэх, гарах гэх мэт — өөр дүрэмтэй тул хараахан хөндөхгүй).
+const GENITIVE_SUFFIX_SPELLINGS = /^(ийн|ын|ий|ы|ны|ний|гийн|гын)$/i;
+// Тоо (0-10)-ын эрэгтэй/эмэгтэй ялгаа "-дугаар/-дүгээр" дэс дугаарлалын түгээмэл жишгээс
+// гаргав: нэгДҮГЭЭР(эм),хоёрДУГААР(эр),гуравДУГААР(эр),дөрөвДҮГЭЭР(эм),тавДУГААР(эр),
+// зургаадугаар(эр),долоодугаар(эр),наймдугаар(эр),есДҮГЭЭР(эм),аравдугаар(эр).
+const DIGIT_GENDER = {'0':'f','1':'f','2':'m','3':'m','4':'f','5':'m','6':'m','7':'m','8':'m','9':'f'};
+const ROUND_NUMBER_GENDER = {'10':'m','20':'m','30':'m','40':'f','50':'m','60':'m','70':'m','80':'m','90':'f','100':'m','1000':'m'};
+function numberGender(numStr){
+  const n = numStr.replace(/^0+(?=\d)/, '');
+  if (ROUND_NUMBER_GENDER[n]) return ROUND_NUMBER_GENDER[n];
+  if (n.length <= 1) return DIGIT_GENDER[n] || 'f'; // ганц оронтой (0-9) тоо: DIGIT_GENDER-ээс шууд
+  const lastDigit = n[n.length - 1];
+  if (lastDigit === '0') return 'm'; // 200,300... гэх мэт: ихэнх нь эрэгтэй тул анхны утга
+  return DIGIT_GENDER[lastDigit] || 'f';
+}
+// Энгийн Кирилл үгийн эгшиг зохицлыг (эхний "ил" арын/урдын эгшгээр) тодорхойлно.
+// Саармаг (и/й/ы) болон хос үсэг (е/ё/я/ю)-ийг найдваргүй тул алгасна; олдохгүй бол сурвалж
+// дээрх дүрмээр ("зөвхөн саармаг эгшигтэй үг эмэгтэйд тооцогдоно") эмэгтэй гэж үзнэ.
+function wordGender(cyrillicWord){
+  const w = String(cyrillicWord).toLowerCase();
+  for (const ch of w){
+    if (ch === 'а' || ch === 'о' || ch === 'у') return 'm';
+    if (ch === 'э' || ch === 'ө' || ch === 'ү') return 'f';
+  }
+  return 'f';
+}
+
+function convertToken(tok){
+  const bare = tok.replace(/^[^\wа-яөүёА-ЯӨҮЁ]+|[^\wа-яөүёА-ЯӨҮЁ]+$/g, '');
+  if (!bare) return tok;
+  const start = tok.indexOf(bare);
+  const lead = tok.slice(0, start);
+  const trail = tok.slice(start + bare.length);
+  // Зөвхөн тооноос (мөн цэг/таслал/зураас/слэш гэх мэт тоон формат тэмдэгтээс) бүрдсэн бол
+  // MNS 6395:2022 §4.6.1/§4.7.1-ийн зарчмаар МОНГОЛ ТОО болгоно. Латин үсэгтэй хольцолсон бол
+  // (жиш нь имэйл хаяг, "IPv4") энэ мэдэхгүй тул хэвээр нь орхино.
+  if (/^[0-9]+([.,\-\/:][0-9]+)*$/.test(bare)){
+    return lead + digitsToMongol(bare) + trail;
+  }
+  // "14-ний", "5-р", "28-нд" гэх мэт ТОО+зураас+Кирилл ЗАЛГАВАР хэлбэрийг тусад нь барина —
+  // үгүй бол тоо хэсэг нь Араб тоон хэвээрээ үлдэж, зөвхөн залгавар нь хөрвүүлэгддэг байсан
+  // (хэрэглэгчийн олж мэдсэн алдаа). Хэрэв залгавар нь ГЕНИТИВ (харьяалах) хэлбэр бол
+  // (ын/ийн/ний/гийн/гын) тухайн тооны эгшиг зохицолд тохирсон 2 хэлбэрийн (ᠤᠨ/ᠡᠶᠢᠨ) аль
+  // нэгийг сонгоно; бусад залгавар бол өмнөх шигээ энгийн журмаар хөрвүүлнэ.
+  const digitSuffixMatch = bare.match(/^([0-9]+)-([а-яөүёА-ЯӨҮЁ]+)$/);
+  if (digitSuffixMatch){
+    const digitsPart = digitsToMongol(digitSuffixMatch[1]);
+    const suffixRaw = digitSuffixMatch[2];
+    const suffixLower = suffixRaw.toLowerCase();
+    if (GENITIVE_SUFFIX_SPELLINGS.test(suffixLower)){
+      return lead + digitsPart + GENITIVE_SUFFIX[numberGender(digitSuffixMatch[1])] + trail;
+    }
+    const suffixConverted = (typeof DICT !== 'undefined' && DICT[suffixLower]) ? DICT[suffixLower] : charByChar(suffixLower);
+    return lead + digitsPart + '-' + suffixConverted + trail;
+  }
+  // "Болод-ын", "Дорж-ийн" гэх мэт ҮГ+зураас+ГЕНИТИВ залгавар — язгуурын эгшиг зохицлоор
+  // (wordGender) тохирох хэлбэрийг сонгоно (жиш: MonScript-т "Болод-ын"→"ᠪᠣᠯᠤᠳ᠎ᠤᠨ").
+  const wordSuffixMatch = bare.match(/^([а-яөүёА-ЯӨҮЁ]+)-([а-яөүёА-ЯӨҮЁ]+)$/);
+  if (wordSuffixMatch && GENITIVE_SUFFIX_SPELLINGS.test(wordSuffixMatch[2].toLowerCase())){
+    const stemLower = wordSuffixMatch[1].toLowerCase();
+    const stemConverted = (typeof DICT !== 'undefined' && DICT[stemLower]) ? DICT[stemLower] : charByChar(stemLower);
+    return lead + stemConverted + GENITIVE_SUFFIX[wordGender(stemLower)] + trail;
+  }
+  const lower = bare.toLowerCase();
+  let converted;
+  if (typeof DICT !== 'undefined' && DICT[lower]) {
+    converted = DICT[lower];
+    dictHits++;
+  } else {
+    converted = charByChar(bare);
+    dictMisses++;
+  }
+  return lead + converted + trail;
+}
+
+function cyrillicToMongol(text){
+  dictHits = 0; dictMisses = 0;
+  return text.split(/(\s+)/).map(tok => /^\s*$/.test(tok) ? tok : convertToken(tok)).join('');
+}
+
+let lastConverted = '';
+
+function convertText(){
+  const src = document.getElementById('inputText').value;
+  lastConverted = cyrillicToMongol(src);
+  const box = document.getElementById('previewBox');
+  const stat = document.getElementById('dictStat');
+  if (!lastConverted.trim()){
+    box.innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
+    if (stat) stat.textContent = '';
+    return;
+  }
+  renderPreview();
+  if (stat){
+    const total = dictHits + dictMisses;
+    stat.textContent = total ? ('Толь бичгээс шууд олдсон: ' + dictHits + ' / ' + total + ' үг') : '';
+  }
+}
+
+// Preview-г Word татахад яг ямар байдлаар хэвлэгдэхтэй аль болох ойролцоо харуулна:
+// бланкны зураг, сонгосон бичгийн ангиллын толгой хэсэг (тэргүү, хэнд хандах г.м), үндсэн бичвэр, footer.
+function renderPreview(){
+  const box = document.getElementById('previewBox');
+  if (!lastConverted.trim()){
+    box.innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
+    return;
+  }
+  const letterheadImgHtml = letterheadDataUrl
+    ? '<div style="text-align:center;margin-bottom:8px;"><img src="' + letterheadDataUrl + '" style="max-width:100%;max-height:60px;"></div>'
+    : '';
+  const sidebar = (typeof buildSidebarHtml === 'function') ? buildSidebarHtml() : { cols: [] };
+  const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
+  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210, marginTop:35, marginBottom:15, marginLeft:15, marginRight:15 };
+  const readMm = (id, fallback) => {
+    const el = document.getElementById(id);
+    const v = el ? parseFloat(el.value) : NaN;
+    return (isFinite(v) && v >= 0) ? v : fallback;
+  };
+  const mT = readMm('marginTop', base.marginTop);
+  const mB = readMm('marginBottom', base.marginBottom);
+  const mL = readMm('marginLeft', base.marginLeft);
+  const mR = readMm('marginRight', base.marginRight);
+  const isA5 = paperKey === 'A5';
+  // Хуудасны харьцааг (үргэлж хэвтээ, MNS 6395 §3.1) болон зах (margin)-ийг бодит мм-ийн харьцаагаар дүрсэлнэ
+  const pagePxWidth = 620; // preview-ийн дэлгэцний өргөн (px), зөвхөн харагдац
+  const pagePxHeight = Math.round(pagePxWidth * (base.height / base.width));
+  const padTop = Math.round(pagePxHeight * (mT / base.height));
+  const padBottom = Math.round(pagePxHeight * (mB / base.height));
+  const padLeft = Math.round(pagePxWidth * (mL / base.width));
+  const padRight = Math.round(pagePxWidth * (mR / base.width));
+  // MNS 6395 Хавсралт А1/А2: тус бүрдэл (лого/нэр, огноо/дугаар, хэнд хандах, тэргүү) ӨӨР
+  // ӨӨРИЙН нарийн баганад, зурган схемийн байрлалын дарааллаар ЗҮҮНЭЭС БАРУУН тийш; гол
+  // бичвэр эдгээрийн хамгийн БАРУУН талд, өргөн баганад — MonScript-ийн бодит загвараар
+  // баталгаажуулсан ЭНГИЙН зэрэгцээ (тэгш) баганат бүтэц (sidebar.cols). sidebar.grid нь
+  // хуучин (nested/gridSpan) хувилбарын нөөц зам — одоо хэрэглэгддэггүй ч гэмгүй үлдээв.
+  let colsHtml = '';
+  if (sidebar.grid){
+    const g = sidebar.grid;
+    const wPx = (mm) => Math.round(pagePxWidth * (mm / base.width));
+    const w1 = wPx(g.col1.widthMm), wUp = wPx(g.upper.widthMm), w2 = wPx(g.col2.widthMm), w3 = wPx(g.col3.widthMm);
+    colsHtml =
+      '<div style="width:' + (w1 + wUp) + 'px;flex:0 0 ' + (w1 + wUp) + 'px;border-right:1px dashed #d9dee5;padding-right:6px;margin-right:8px;">' +
+        '<div style="display:flex;align-items:flex-start;">' +
+          '<div style="width:' + w1 + 'px;flex:0 0 ' + w1 + 'px;">' + g.col1.html + '</div>' +
+          '<div style="width:' + wUp + 'px;flex:0 0 ' + wUp + 'px;padding-left:6px;">' +
+            g.upper.html +
+            '<div style="margin-top:10mm;display:flex;align-items:flex-start;">' +
+              '<div style="width:' + w2 + 'px;flex:0 0 ' + w2 + 'px;">' + g.col2.html + '</div>' +
+              '<div style="width:' + w3 + 'px;flex:0 0 ' + w3 + 'px;padding-left:6px;">' + g.col3.html + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  } else {
+    const cols = sidebar.cols || [];
+    for (const col of cols){
+      const wPx = Math.round(pagePxWidth * (col.widthMm / base.width));
+      colsHtml += '<div style="width:' + wPx + 'px;flex:0 0 ' + wPx + 'px;border-right:1px dashed #d9dee5;padding-right:6px;margin-right:8px;">' + col.html + '</div>';
+    }
+  }
+  const bodyDiv = '<div style="flex:1;min-width:0;"><div class="mongol-vertical">' + renderMongolHtml(lastConverted) + '</div></div>';
+  box.innerHTML =
+    '<div style="width:' + pagePxWidth + 'px;min-height:' + pagePxHeight + 'px;background:#fff;border:1px solid #d5dbe3;box-shadow:0 2px 10px rgba(0,0,0,0.08);' +
+    'padding:' + padTop + 'px ' + padRight + 'px ' + padBottom + 'px ' + padLeft + 'px;margin:0 auto;">' +
+    letterheadImgHtml +
+    '<div style="display:flex;align-items:flex-start;">' + colsHtml + bodyDiv + '</div>' +
+    '</div>' +
+    '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— ' + (isA5 ? 'А5' : 'А4') + ' хэвтээ (' + base.width + '×' + base.height + 'мм), зах: дээд ' + mT + 'мм / доод ' + mB + 'мм / зүүн ' + mL + 'мм / баруун ' + mR + 'мм —</div>';
+}
+
+function clearAll(){
+  document.getElementById('inputText').value = '';
+  lastConverted = '';
+  document.getElementById('previewBox').innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
+  const stat = document.getElementById('dictStat');
+  if (stat) stat.textContent = '';
+  const spellBox = document.getElementById('spellBox');
+  if (spellBox){ spellBox.style.display = 'none'; spellBox.innerHTML = ''; }
+  const spellStat = document.getElementById('spellStat');
+  if (spellStat) spellStat.textContent = '';
+}
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Тоо (0-9) болон латин үсгийн залгаа урсгалыг <span class="num-run"> дотор ороож,
+// босоо бичгийн урсгал дундуур хэвтээгээрээ, зөв дараалалтайгаар унших боломжтой болгоно
+function renderMongolHtml(text){
+  const escaped = escapeHtml(text);
+  return escaped.replace(/([0-9A-Za-z.,\/\-:()%]+)/g, '<span class="num-run">$1</span>');
+}
+
+function toggleDocFields(){
+  const cat = document.getElementById('docCategory').value;
+  document.getElementById('zahiramjlalFields').style.display = (cat === 'zahiramjlal') ? 'grid' : 'none';
+  document.getElementById('albanbichigFields').style.display = (cat === 'albanbichig') ? 'grid' : 'none';
+  renderPreview();
+}
+
+// MNS 5140-3:2021-ийн хүснэгтээс (нийтлэг Кирилл баримт бичигт баталгаажсан тоо):
+// А4 босоо, А5 (аль аль нь): дээд 20, доод 20, зүүн 30, баруун 15мм; мөр хоорондын зай А4=1.5, А5=1.0
+// А4 хэвтээ: дээд 30, доод 15, зүүн 20, баруун 20мм (стандартын хүснэгтээс)
+// А5 хэвтээ нь стандартад тусад нь заагаагүй тул А4 хэвтээгийн харьцааг ашиглав (баталгаажаагүй, өөрчилж болно)
+// Монгол бичгээр (MNS 6395:2022) үйлдэх баримт бичгийн зурагт хавсралт (В1-В14, С1-С4)-ыг
+// уншиж чадаагүй тул тэдгээрийн margin/фонтын тоог баталгаажуулж чадаагүй — доорх талбаруудыг
+// шаардлагатай бол өөрөө засаж болно.
+// MNS 6395:2022, "А2 хавсралт" (хуудас 7, "Албан бичгийн хэвлэмэл хуудасны бүрдлийн схем")-ийг
+// 300dpi-р шинээр (2 дахь удаа, ХЭРЭГЛЭГЧИЙН ШУУД ШААРДСАНААР) рендерлэж, зурган дээрх бүх
+// хэмжээсийн тоог ЭЦЭСЛЭН, нарийн уншиж баталгаажуулав (297×210мм, А4 хэвтээ):
+//  - Дээд зах = 25мм (35мм БИШ — миний өмнөх §5.3.4 хүснэгтийн уншилт буруу байсан; MonScript-ийн
+//    бодит А5 админ тохиргоо мөн 25мм гэдгийг батласан тул А4/А5 хоёулаа 25мм гэдэг нь батлагдав)
+//  - Баруун зах = 15мм, Доод зах = 15мм (тоогоор шууд дүрслэгдсэн)
+//  - Зүүн зах = 15мм гэж тооцов (тусад нь дугаарлагдаагүй ч баруун/доод захтай тэнцүү, стандарт жишиг)
+//  - Багана: 1-р (37мм: 01,02,03,04,05 — лого/байгууллагын нэр/хаяг), 2-р (24мм: 06,09,07 —
+//    огноо/хариутай/дугаар), 3-р (20мм: 11 — тэргүү); "10" (хэнд хандах) нь 2+3-р багана
+//    НЭГТГЭСЭН 44мм (24+20) бүсэд байрладаг.
+const PAPER_CONFIG = {
+  A4:  { width: 297, height: 210, marginTop: 25, marginBottom: 15, marginLeft: 15, marginRight: 15, lineHeight: 1.0 },
+  A5:  { width: 210, height: 148, marginTop: 25, marginBottom: 15, marginLeft: 15, marginRight: 15, lineHeight: 1.0 }
+};
+
+function applyPaperDefaults(){
+  const key = document.getElementById('paperSize').value;
+  const p = PAPER_CONFIG[key] || PAPER_CONFIG.A4;
+  document.getElementById('marginTop').value = p.marginTop;
+  document.getElementById('marginBottom').value = p.marginBottom;
+  document.getElementById('marginLeft').value = p.marginLeft;
+  document.getElementById('marginRight').value = p.marginRight;
+  renderPreview();
+}
+
+// Араб тоог Монгол тоонд хөрвүүлнэ (MNS 6395:2022 §4.6.1, §4.7.1: огноо, бүртгэлийн дугаарыг монгол тоогоор бичнэ)
+const MONGOL_DIGITS = ['᠐','᠑','᠒','᠓','᠔','᠕','᠖','᠗','᠘','᠙'];
+function digitsToMongol(str){
+  return String(str).replace(/[0-9]/g, d => MONGOL_DIGITS[+d]);
+}
+
+// Тухайн талбарыг Монгол бичигт хөрвүүлж, жижиг хэмжээтэй мөр болгож буцаана.
+// Талбар хоосон бол '' буцаана (placeholder текст огт харуулахгүй).
+function mongolLine(rawValue, fontSizePt){
+  const v = (rawValue || '').trim();
+  if (!v) return '';
+  return renderMongolHtml(cyrillicToMongol(v));
+}
+// Огноо, дугаар зэрэг МОНГОЛ ТООГООР бичих ёстой талбарт зориулсан хувилбар
+function mongolDateLine(rawValue){
+  const v = (rawValue || '').trim();
+  if (!v) return '';
+  return renderMongolHtml(digitsToMongol(cyrillicToMongol(v)));
+}
+
+// MNS 6395:2022, Хавсралт А1 (захирамжлал)/А2 (албан бичиг)-ын бүрдлийн зурган схемийг ЯГ
+// дагаж, тус бүрдэл ӨӨР ӨӨРИЙН нарийн баганад байрлана (нэг баганад бүгдийг цуглуулахгүй,
+// нэг урсгал болгож нэгтгэхгүй) — хэрэглэгчийн шууд шаардсанаар: "чи нэг бүрчлэн тэгж
+// гаргахгүй бол яаж албан бланк дээр шууд хэвлэх юм бэ". {cols:[{widthMm, html}, ...]}
+// хэлбэрээр буцаана — cols нь хуудасны зүүн талаас баруун тийш дараалсан баганууд, тус
+// бүр өөрийн w:textDirection-той (Word хүснэгтийн нүд); гол бичвэр эдгээрийн БАРУУН талд,
+// тусдаа өргөн баганад орно.
+function buildSidebarHtml(){
+  const cat = document.getElementById('docCategory').value;
+  const tag = (label) => '<div style="font-size:9px;color:#9aa3af;">[' + label + ']</div>';
+  if (cat === 'zahiramjlal'){
+    const orgTitleRaw = document.getElementById('orgTitle').value.trim();
+    const docKind = document.getElementById('docKind').value;
+    const cityRaw = document.getElementById('cityName').value.trim();
+    const dateRaw = document.getElementById('docDate').value.trim();
+    const subjectRaw = (document.getElementById('docSubjectZ') || {}).value ? document.getElementById('docSubjectZ').value.trim() : '';
+    const titleLine = orgTitleRaw ? (mongolLine(orgTitleRaw) + '<br>') : '';
+    const docKindLine = mongolLine(docKind);
+    const dateLine = mongolDateLine(dateRaw || '________ оны ____ сарын ____ өдөр');
+    const cityLine = cityRaw ? mongolLine(cityRaw) : '';
+    // А1 хавсралт: 1-р багана (20мм) — байгууллага/нэр/төрөл; 2-р багана (20мм) — огноо/дугаар/хот
+    const cols = [
+      { widthMm: 20, html: tag('Байгууллага/төрөл') + '<div class="mongol-vertical" style="font-size:13pt; font-weight:bold;">' + titleLine + docKindLine + '</div>' },
+      { widthMm: 20, html: tag('Огноо/дугаар/хот') + '<div class="mongol-vertical" style="font-size:11pt;">' + dateLine + '</div>' +
+          '<div class="mongol-vertical" style="font-size:11pt; margin-top:4mm;">Дугаар ______</div>' +
+          (cityLine ? '<div class="mongol-vertical" style="font-size:11pt; margin-top:4mm;">' + cityLine + '</div>' : '') }
+    ];
+    if (subjectRaw) cols.push({ widthMm: 20, html: tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:13pt;">' + mongolLine(subjectRaw) + '</div>' });
+    return { cols: cols };
+  }
+  if (cat === 'albanbichig'){
+    // Хэрэглэгчийн ЭЦЭСЛЭН шаардсан дүрэм (2 удаа тодорхой тайлбарласан):
+    //  - А4: ХЭНД ХАНДАХ дээр, ТЭРГҮҮ доор нь, НЭГ баганад дараалуулан байрлана.
+    //  - А5: ТЭРГҮҮ огт байхгүй (харагдахгүй) — зөвхөн ХЭНД ХАНДАХ гарч ирнэ, голлосон.
+    // Байгууллагын нэр/хаяг/огноо/дугаар/хариутай зэрэг нь ЖИНХЭНЭ хэвлэмэл хуудсан дээр
+    // аль хэдийн хэвлэгдсэн байдаг тул программ дахин хэвлэхгүй — зайг нь spacer баганаар хадгална.
+    const addresseeRaw = document.getElementById('addresseeName').value.trim();
+    const subjectRaw = document.getElementById('docSubject').value.trim();
+    const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
+    const defaultML = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey].marginLeft : 15;
+    const mLval = parseFloat((document.getElementById('marginLeft') || {}).value);
+    const mL = (isFinite(mLval) && mLval >= 0) ? mLval : defaultML;
+    const cols = [];
+    if (paperKey === 'A5'){
+      // MonScript-ийн бодит А5 тохиргоо: "хэнд, товч утга эхлэх шугам"=75мм, "гол бичвэр
+      // эхлэх шугам"=95мм (хуудасны зүүн ирмэгээс) — spacer = зах-75мм, meta-бүс = 75-95мм.
+      // ТЭРГҮҮ (subjectRaw) А5 ДЭЭР ОГТ АШИГЛАГДАХГҮЙ — зөвхөн хэнд хандах, голлосон.
+      const spacerMm = Math.max(0, 75 - mL);
+      cols.push({ widthMm: spacerMm, html: tag('(хэвлэмэл хуудсан дээр бэлэн)') });
+      const addresseeHtml = addresseeRaw ? ('<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>') : '';
+      if (addresseeHtml) cols.push({ widthMm: 20, html: addresseeHtml });
+    } else {
+      // А4: MNS 6395:2022 хуудас 7-ын "10" (хэнд хандах) яг тэнхлэг — 2+3-р багана нэгтгэсэн
+      // 44мм (24+20) бүсэд байрладаг. Хэнд хандах + тэргүүг НЭГ баганад дараалуулан (хэнд
+      // хандах дээр, тэргүү доор), баганын өргөнийг тэр 44мм-ээр авав.
+      cols.push({ widthMm: 37, html: tag('(хэвлэмэл хуудсан дээр бэлэн)') });
+      let stackedHtml = '';
+      if (addresseeRaw) stackedHtml += tag('Хэнд хандаж') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center;">' + mongolLine(addresseeRaw) + '</div>';
+      if (subjectRaw) stackedHtml += tag('Тэргүү') + '<div class="mongol-vertical" style="font-size:16pt; text-align:center; margin-top:10mm;">' + mongolLine(subjectRaw) + '</div>';
+      if (stackedHtml) cols.push({ widthMm: 44, html: stackedHtml });
+    }
+    return { cols: cols };
+  }
+  return { cols: [] };
+}
+
+// MNS 5140-2:2021: "Боловсруулсан, хянасан тухай тэмдэглэл" (бүрдэл №20)-ийг
+// баримт бичгийн сүүлийн хуудасны зүүн доод буланд жижиг фонтоор байрлуулна.
+// Нэрийг мөн Кирилл→Монгол бичигт хөрвүүлнэ (бусад бичвэртэй ижил байдлаар).
+// (Word-ийн HTML экспортод үнэн зэрэгцээ absolute positioning тогтвортой ажилладаггүй тул
+// бичвэрийн эцэст урсгалын дагуу байрлуулсан бөгөөд шаардлагатай бол Word дотор чирж болно)
+function buildFooterHtml(){
+  const preparedRaw = document.getElementById('preparedBy').value.trim();
+  const checkedRaw = document.getElementById('checkedBy').value.trim();
+  if (!preparedRaw && !checkedRaw) return '';
+  const parts = [];
+  if (preparedRaw) parts.push('Боловсруулсан: ' + mongolLine(preparedRaw));
+  if (checkedRaw) parts.push('Хянасан: ' + mongolLine(checkedRaw));
+  return '<div class="mongol-vertical" style="margin-top:15mm; font-size:9pt; min-height:40px;">' + parts.join('&nbsp;&nbsp;&nbsp;&nbsp;') + '</div>';
+}
+
+let letterheadDataUrl = '';
+function loadLetterhead(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    letterheadDataUrl = ev.target.result;
+    const img = document.getElementById('letterheadPreview');
+    img.src = letterheadDataUrl;
+    img.style.display = 'block';
+    renderPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function xmlEscape(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function mmToTwips(mm){ return Math.round(mm * 56.6929133858); }
+function mmToEmu(mm){ return Math.round(mm * 36000); }
+
+// === MNS 6395:2022, Хавсралт А1/А2 схемийн дагуух хүснэгт (2 багана: зүүн "бланкны мэдээлэл"
+// багана + баруун "гол бичвэр" багана) — Монгол бичгээр үйлдэх баримт бичигт лого, байгууллагын
+// нэр, огноо, дугаар, хэнд хандах, тэргүү зэрэг БҮГД хуудасны ЗҮҮН талд босоо баганаар,
+// харин гол бичвэр баруун талд өргөн баганаар урсдаг болохыг эх стандартын зурган хавсралтаас
+// (А1 — захирамжлалын, А2 — албан бичгийн бүрдлийн схем) тогтоов.
+// Word-ийн хүснэгтийн нүд (w:tc) бүр өөрийн гэсэн w:textDirection авч чаддаг тул баганыг тус
+// тусад нь босоо урсгалтай болгоно.
+function ooxmlCell(paragraphsXml, widthTwips, opts){
+  opts = opts || {};
+  const tcW = '<w:tcW w:w="' + widthTwips + '" w:type="dxa"/>';
+  const dir = (opts.vertical === false) ? '' : '<w:textDirection w:val="tbLrV"/>';
+  const valign = '<w:vAlign w:val="' + (opts.valign || 'top') + '"/>';
+  const margins = '<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="60" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar>';
+  return '<w:tc><w:tcPr>' + tcW + margins + dir + valign + '</w:tcPr>' + (paragraphsXml || '<w:p/>') + '</w:tc>';
+}
+function ooxmlNoBorderTblPr(totalWidthTwips){
+  return '<w:tblPr><w:tblW w:w="' + totalWidthTwips + '" w:type="dxa"/><w:tblBorders>' +
+    '<w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/>' +
+    '<w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr>';
+}
+// Зүүн "бланкны мэдээлэл" багана + баруун "гол бичвэр" багана бүхий 1-мөр, 2-баганат
+// хүснэгт үүсгэнэ. sidebarXml/bodyXml нь аль хэдийн бэлдсэн <w:p>...</w:p> цуглуулга байна.
+function buildSidebarTable(sidebarXml, bodyXml, sidebarWidthTwips, bodyWidthTwips){
+  const totalW = sidebarWidthTwips + bodyWidthTwips;
+  const grid = '<w:tblGrid><w:gridCol w:w="' + sidebarWidthTwips + '"/><w:gridCol w:w="' + bodyWidthTwips + '"/></w:tblGrid>';
+  const sidebarCell = ooxmlCell(sidebarXml, sidebarWidthTwips, {vertical:true, valign:'top'});
+  const bodyCell = ooxmlCell(bodyXml, bodyWidthTwips, {vertical:true, valign:'top'});
+  const row = '<w:tr>' + sidebarCell + bodyCell + '</w:tr>';
+  return '<w:tbl>' + ooxmlNoBorderTblPr(totalW) + grid + row + '</w:tbl>';
+}
+// Sidebar доторх богино мөрүүдийн хоорондох "хоосон зай" - тусдаа хоосон paragraph
+function sidebarGapPara(twips){
+  return '<w:p><w:pPr><w:spacing w:before="0" w:after="' + (twips||120) + '"/></w:pPr></w:p>';
+}
+
+// MNS 6395:2022 Хавсралт А1/А2-ын зурган схемийг ЯГ дагаж, N ширхэг нарийн мэдээллийн
+// багана (тус бүр өөрийн зориулалттай — жиш: 1-р нь байгууллагын нэр, 2-р нь хэнд хандах,
+// 3-р нь тэргүү) + 1 өргөн "гол бичвэр" багана бүхий мөр угсарна. cols нь
+// [{widthTwips, paragraphsXml}, ...] хэлбэртэй массив.
+// АНХААР (чухал алдаа засвар): хэрэв мөрийн (w:tr) өндрийг ТОДОРХОЙ (trHeight) заагаагүй бол
+// Word rotated (tbLrV) нүднүүдийн мөрийн өндрийг өөрөө маш ЖИЖИГ (агуулгад тохируулан)
+// тооцож, улмаар урт гол бичвэр маш олон НАРИЙХАН баганад "хугарч" хуудасны зүүн дээд буланд
+// шахагдаж, баруун/доод тал нь ХООСОН үлддэг (яг хэрэглэгчийн screenshot дээр харагдсан алдаа).
+// Иймд rowHeightTwips-ийг үргэлж ЗААВАЛ дамжуулж, мөрийг хуудасны бичвэрийн бүх өндрөөр
+// (ядаж) нэмэгдэхүйц болгоно (w:hRule="atLeast" — агуулга илүү бол өсч болно, гэхдээ доод тал нь баталгаатай).
+function buildMultiColTable(cols, bodyXml, bodyWidthTwips, rowHeightTwips){
+  let totalW = bodyWidthTwips;
+  let gridXml = '';
+  let cellsXml = '';
+  for (const col of cols){
+    totalW += col.widthTwips;
+    gridXml += '<w:gridCol w:w="' + col.widthTwips + '"/>';
+    // col.vertical === false: багана нь өөрөө ДОТОР ХҮСНЭГТ (nested table, өөрийн
+    // textDirection-той) агуулж байгаа тохиолдолд гадна нүдийг ДАВХАР эргүүлэхгүй.
+    const isVert = col.vertical !== false;
+    cellsXml += ooxmlCell(col.paragraphsXml, col.widthTwips, {vertical:isVert, valign:'top'});
+  }
+  gridXml += '<w:gridCol w:w="' + bodyWidthTwips + '"/>';
+  cellsXml += ooxmlCell(bodyXml, bodyWidthTwips, {vertical:true, valign:'top'});
+  const grid = '<w:tblGrid>' + gridXml + '</w:tblGrid>';
+  const trPr = rowHeightTwips ? ('<w:trPr><w:trHeight w:val="' + rowHeightTwips + '" w:hRule="atLeast"/></w:trPr>') : '';
+  const row = '<w:tr>' + trPr + cellsXml + '</w:tr>';
+  return '<w:tbl>' + ooxmlNoBorderTblPr(totalW) + grid + row + '</w:tbl>';
+}
+
+// АЛДАА ЗАСВАР (хэнд хандах/тэргүү "дэс дараалалтай"): tbLrV (Монгол бичгийн эргүүлэлт)-тэй
+// НЭГ нүдэнд 2 тусдаа <w:p> (параграф) байрлуулбал, тэдгээр нь Word-т ХОСЛОГЧ БАГАНА (зэрэгцээ,
+// зүүнээс баруун) болж хуваагддаг — ДЭЭД/ДООД БИШ. Иймд "хэнд хандах ДЭЭР, тэргүү ДООР" гэдэг
+// шаардлагыг биелүүлэхийн тулд ТУСДАА 2 МӨР (nested, доторх хүснэгт) ашиглах шаардлагатай:
+// хүснэгтийн мөр (w:tr) бүр физик хувьд ДЭЭР/ДООР зэрэгцдэг тул 1-р мөр = дээд, 2-р мөр = доод.
+// gridSpan ХЭРЭГГҮЙ (зөвхөн 1 багана) тул өмнөх buildAlbanBichigTable-ээс ХЯЛБАР бөгөөд аюулгүй.
+function buildStackedCell(widthTwips, upperXml, lowerXml, upperHeightTwips, lowerHeightTwips){
+  const margins = '<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="60" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar>';
+  const dir = '<w:textDirection w:val="tbLrV"/>';
+  const valignTop = '<w:vAlign w:val="top"/>';
+  const grid = '<w:tblGrid><w:gridCol w:w="' + widthTwips + '"/></w:tblGrid>';
+  const cellA = '<w:tc><w:tcPr><w:tcW w:w="' + widthTwips + '" w:type="dxa"/>' + margins + dir + valignTop + '</w:tcPr>' + (upperXml || '<w:p/>') + '</w:tc>';
+  const trA = '<w:tr><w:trPr><w:trHeight w:val="' + upperHeightTwips + '" w:hRule="atLeast"/></w:trPr>' + cellA + '</w:tr>';
+  const cellB = '<w:tc><w:tcPr><w:tcW w:w="' + widthTwips + '" w:type="dxa"/>' + margins + dir + valignTop + '</w:tcPr>' + (lowerXml || '<w:p/>') + '</w:tc>';
+  const trB = '<w:tr><w:trPr><w:trHeight w:val="' + lowerHeightTwips + '" w:hRule="atLeast"/></w:trPr>' + cellB + '</w:tr>';
+  return '<w:tbl>' + ooxmlNoBorderTblPr(widthTwips) + grid + trA + trB + '</w:tbl>' + '<w:p/>';
+}
+
+// MNS 6395:2022 Хавсралт А2-ын ЯГ зурган схем: 01/02 (байгууллагын нэр)+03/04 (хаяг/утас) нь
+// 1-р баганад (37мм, БҮХ өндрөөр), 10 (хэнд хандах) нь ДЭЭД мөрөнд 2+3-р баганыг НЭГТГЭСЭН
+// (44мм) өргөнөөр, харин 06/09/07 (огноо/дугаар/хариу) ба 11 (тэргүү) нь ДООД мөрөнд тус
+// тусдаа 2-р (24мм) ба 3-р (20мм) баганад байрладаг болохыг эх PDF-ийн зурган хавсралтаас
+// (хуудас 7) шинжлэв. Иймд ЖИНХЭНЭ 2 МӨР бүхий хүснэгт хэрэгтэй бөгөөд 1-р багана ба гол
+// бичвэрийн багана нь vMerge (босоо нэгтгэл)-ээр 2 мөрийг дамжина.
+// АЛДАА ЗАСВАР (чухал, 2 дахь оролдлого): vMerge (босоо нэгтгэл) нь ROTATED (tbLrV) текст
+// бүхий нүдтэй хослуулахад Word-т маш тогтворгүй ажилладаг болох нь илэрсэн (мөр 2 дахь
+// хуудас руу хальж, гол бичвэр зөвхөн дээд мөрийн өндрөөр хязгаарлагдаж байсан). Мөн эх
+// хувилбарт w:tcPr дотоод элементүүдийн дараалал (CT_TcPrBase схем: tcW→gridSpan→vMerge→
+// tcMar→textDirection→vAlign) буруу байсан тул Word "засварлах" явцдаа vMerge/gridSpan-ийг
+// хаяж байв. Иймд vMerge-ээс бүрмөсөн ЗАЙЛСХИЙЖ, ХҮРЭЭГҮЙ (nil border) тул хэрэгцээгүй
+// болсон "нэгтгэл"-ийг зүгээр 2 ДАВХАР ЯГ АДИЛ өргөнтэй нүд болгож орлуулна (доод нүдийг
+// хоосон орхивол, хүрээгүй үед НЭГ нүдтэй яг адилхан харагдана). Гол бичвэр бол ОГТ 2-мөр
+// бүтэцтэй хольдоггүй, зөвхөн ГАДНА талын НЭГ мөр, НЭГ нүдэнд (buildMultiColTable-тай ижил,
+// батлагдсан загвар) бүтэн өндрөөр урсдаг тул хамгийн найдвартай. Хэнд хандах/огноо/тэргүү
+// зэрэг 2-мөр бүтэц зөвхөн metaCell дотор ХЭВЛЭГДСЭН ДОТОР ХҮСНЭГТ (nested table) байдлаар орно.
+function buildAlbanBichigTable(col1Xml, addresseeXml, col2Xml, col3Xml, bodyXml, widths, rowHeights){
+  const w1 = widths.col1, w2 = widths.col2, w3 = widths.col3, w23 = w2 + w3, wBody = widths.body;
+  const metaWidth = w1 + w23;
+  const margins = '<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="60" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar>';
+  const dir = '<w:textDirection w:val="tbLrV"/>';
+  const valignTop = '<w:vAlign w:val="top"/>';
+
+  // === Дотор хүснэгт (metaCell дотор): 2 мөр x 3 багана, gridSpan-аар хэнд хандахыг нэгтгэнэ ===
+  const innerGrid = '<w:tblGrid><w:gridCol w:w="' + w1 + '"/><w:gridCol w:w="' + w2 + '"/><w:gridCol w:w="' + w3 + '"/></w:tblGrid>';
+  // Мөр A: 1-р багана (байгууллага) | 2+3-р багана нэгтгэсэн (хэнд хандах)
+  const iCellA1 = '<w:tc><w:tcPr><w:tcW w:w="' + w1 + '" w:type="dxa"/>' + margins + dir + valignTop + '</w:tcPr>' + (col1Xml || '<w:p/>') + '</w:tc>';
+  const iCellA2 = '<w:tc><w:tcPr><w:tcW w:w="' + w23 + '" w:type="dxa"/><w:gridSpan w:val="2"/>' + margins + dir + valignTop + '</w:tcPr>' + (addresseeXml || '<w:p/>') + '</w:tc>';
+  const iTrPrA = '<w:trPr><w:trHeight w:val="' + rowHeights.upper + '" w:hRule="atLeast"/></w:trPr>';
+  const iRowA = '<w:tr>' + iTrPrA + iCellA1 + iCellA2 + '</w:tr>';
+  // Мөр B: 1-р багана (хоосон — хүрээгүй тул дээд нүдтэй нэг мэт харагдана) | 2-р (огноо/дугаар) | 3-р (тэргүү)
+  const iCellB1 = '<w:tc><w:tcPr><w:tcW w:w="' + w1 + '" w:type="dxa"/>' + margins + dir + valignTop + '</w:tcPr><w:p/></w:tc>';
+  const iCellB2 = '<w:tc><w:tcPr><w:tcW w:w="' + w2 + '" w:type="dxa"/>' + margins + dir + valignTop + '</w:tcPr>' + (col2Xml || '<w:p/>') + '</w:tc>';
+  const iCellB3 = '<w:tc><w:tcPr><w:tcW w:w="' + w3 + '" w:type="dxa"/>' + margins + dir + valignTop + '</w:tcPr>' + (col3Xml || '<w:p/>') + '</w:tc>';
+  const iTrPrB = '<w:trPr><w:trHeight w:val="' + rowHeights.lower + '" w:hRule="atLeast"/></w:trPr>';
+  const iRowB = '<w:tr>' + iTrPrB + iCellB1 + iCellB2 + iCellB3 + '</w:tr>';
+  const innerTbl = '<w:tbl>' + ooxmlNoBorderTblPr(metaWidth) + innerGrid + iRowA + iRowB + '</w:tbl>';
+
+  // === Гадна хүснэгт: 1 мөр, 2 нүд — [metaCell (дотор хүснэгтээ агуулна), bodyCell (бүтэн өндөр)] ===
+  const outerGrid = '<w:tblGrid><w:gridCol w:w="' + metaWidth + '"/><w:gridCol w:w="' + wBody + '"/></w:tblGrid>';
+  // Word-т нүдийн (w:tc) дотор ДОТОР ХҮСНЭГТ байрлуулсны дараа нэг хоосон paragraph байх нь
+  // нийцлийн шаардлага (үгүй бол зарим Word хувилбар файлыг эвдэрсэн гэж үзэж болно).
+  const metaCell = '<w:tc><w:tcPr><w:tcW w:w="' + metaWidth + '" w:type="dxa"/>' + valignTop + '</w:tcPr>' + innerTbl + '<w:p/></w:tc>';
+  const bodyCell = ooxmlCell(bodyXml, wBody, {vertical:true, valign:'top'});
+  const outerHeight = rowHeights.upper + rowHeights.lower;
+  const outerTrPr = '<w:trPr><w:trHeight w:val="' + outerHeight + '" w:hRule="atLeast"/></w:trPr>';
+  const outerRow = '<w:tr>' + outerTrPr + metaCell + bodyCell + '</w:tr>';
+  return '<w:tbl>' + ooxmlNoBorderTblPr(metaWidth + wBody) + outerGrid + outerRow + '</w:tbl>';
+}
+
+// Аль хэдийн хөрвүүлсэн (Монгол бичиг + тоо холилдсон) текстийг Word-ийн "run" элементүүд рүү задална.
+// Тоо/латин үсгийн урсгалыг eastAsianLayout(combine) ашиглан босоо мөрийн дунд хэвтээгээр харуулна
+// (энэ бол Word-ийн жинхэнэ, албан ёсны механизм — Хятад/Япон хэлний "tate-chu-yoko"-той ижил зарчим).
+function buildRunsFromConverted(text, fontHalfPts, bold){
+  const boldTag = bold ? '<w:b/>' : '';
+  const rPrBase = '<w:rFonts w:ascii="Mongolian Baiti" w:hAnsi="Mongolian Baiti" w:cs="Mongolian Baiti" w:eastAsia="Mongolian Baiti"/>' + boldTag + '<w:sz w:val="' + fontHalfPts + '"/><w:szCs w:val="' + fontHalfPts + '"/>';
+  const numRe = /[0-9A-Za-z.,\/\-:()%]+/g;
+  let xml = '';
+  const pushRun = (str, isNum) => {
+    if (!str) return;
+    const lines = str.split('\n');
+    lines.forEach((line, i) => {
+      if (i > 0) xml += '<w:br/>';
+      if (!line) return;
+      const layoutTag = isNum ? '<w:eastAsianLayout w:id="0" w:combine="1"/>' : '';
+      xml += '<w:r><w:rPr>' + rPrBase + layoutTag + '</w:rPr><w:t xml:space="preserve">' + xmlEscape(line) + '</w:t></w:r>';
+    });
+  };
+  let lastIndex = 0, m;
+  while ((m = numRe.exec(text)) !== null){
+    if (m.index > lastIndex) pushRun(text.slice(lastIndex, m.index), false);
+    pushRun(m[0], true);
+    lastIndex = m.index + m[0].length;
+  }
+  if (lastIndex < text.length) pushRun(text.slice(lastIndex), false);
+  return xml;
+}
+
+// Кирилл эхийг Монгол бичигт хөрвүүлээд paragraph XML болгоно
+function mongolParagraph(rawCyrillicText, fontHalfPts, opts){
+  opts = opts || {};
+  return mongolParagraphFromConverted(cyrillicToMongol(rawCyrillicText), fontHalfPts, opts);
+}
+// Аль хэдийн хөрвүүлсэн текстийг (дахин хөрвүүлэлгүйгээр) paragraph XML болгоно.
+// АНХААР: гол бичвэр нь Word ХҮСНЭГТИЙН НҮДЭНД байрладаг тул Tab товч нүднээс "гарч",
+// шинэ мөр/хуудас нэмдэг Word-ийн стандарт зан үйлтэй (энэ хэрэглэгчийн мэдэгдсэн алдаа).
+// Иймд opts.firstLineIndentTwips өгвөл \n тус бүрийг ШИНЭ параграф (<w:p>) болгож, тус
+// бүрийн эхэнд автоматаар "tab" мэт indent тавьж, гараар Tab дарах шаардлагагүй болгоно
+// (Word дотор гараар tab тэмдэгт хийх бол Tab биш Ctrl+Tab ашиглана — энэ нь хүснэгтийн
+// стандарт зан үйл, манай алдаа биш).
+function mongolParagraphFromConverted(convertedText, fontHalfPts, opts){
+  opts = opts || {};
+  const jc = opts.align ? ('<w:jc w:val="' + opts.align + '"/>') : '';
+  const spacing = '<w:spacing w:before="0" w:after="' + (opts.afterTwips != null ? opts.afterTwips : 120) + '"/>';
+  if (opts.firstLineIndentTwips){
+    const ind = '<w:ind w:firstLine="' + opts.firstLineIndentTwips + '"/>';
+    const paras = String(convertedText).split('\n');
+    return paras.map(line => {
+      const runs = buildRunsFromConverted(line, fontHalfPts, !!opts.bold);
+      return '<w:p><w:pPr>' + jc + ind + spacing + '</w:pPr>' + (runs || '') + '</w:p>';
+    }).join('');
+  }
+  const runs = buildRunsFromConverted(convertedText, fontHalfPts, !!opts.bold);
+  return '<w:p><w:pPr>' + jc + spacing + '</w:pPr>' + runs + '</w:p>';
+}
+
+function getImageDimensions(dataUrl){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+// ЖИНХЭНЭ WORD ЗАГВАР (template) дээр {{хувьсагч}} орлуулах арга (docxtemplater + PizZip).
+// Хэрэглэгчийн шийдвэрээр: 3 бэлэн .docx загвар файл (A4_AlbanBichig.docx, A5_AlbanBichig.docx,
+// A4_Zahiramj.docx) MS Word дотор ГАРААР, MNS 6395:2022-ын яг мм-ийн хэмжээгээр (§ дороо
+// тайлбарласан) бэлдэж, вэб серверийн үндсэн хавтсанд (энэ html-тэй ижил газар) байрлуулна.
+// Ингэснээр Word дотор ХЭНД ХАНДАХ/ТЭРГҮҮ зэргийг Text Box-оор гараар байрлуулж, миний
+// гараар угсарсан OOXML/tbLrV rotation-той холбоотой эрсдэлээс бүрмөсөн ангижрана.
+// АНХААР: fetch() нь local file:// дээрээс нээвэл CORS-оор блоклогдоно — энэ функц ЗӨВХӨН
+// веб сервер дээр байршуулсан үед ажиллана (хэрэглэгчийн шийдвэрээр сонгосон).
+async function downloadDocx(){
+  if (!lastConverted){
+    convertText();
+  }
+  if (!lastConverted.trim()){
+    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
+    return;
+  }
+  if (typeof PizZip === 'undefined' || typeof window.docxtemplater === 'undefined' || typeof saveAs === 'undefined'){
+    alert('Docx үүсгэх сан (PizZip/docxtemplater/FileSaver) ачаалагдсангүй. Интернэт холболтоо шалгаад дахин оролдоно уу.');
+    return;
+  }
+  const statusEl = document.getElementById('docxStatus');
+  if (statusEl) statusEl.textContent = 'Word файл бэлтгэж байна...';
+
+  const paperKey = (document.getElementById('paperSize') || {}).value || 'A4';
+  const cat = document.getElementById('docCategory').value;
+
+  // Сонголтоос хамаарч дуудах Word загварын нэрийг сонгох
+  let templateName = 'A4_AlbanBichig.docx';
+  if (paperKey === 'A5' && cat === 'albanbichig'){
+    templateName = 'A5_AlbanBichig.docx';
+  } else if (cat === 'zahiramjlal'){
+    templateName = paperKey + '_Zahiramj.docx';
+  } else if (cat === 'none'){
+    templateName = paperKey + '_Engiin.docx';
+  }
+
+  // Загварын {{...}} хаалтанд очих утгуудыг хөрвүүлж бэлдэх
+  const docData = {
+    mainText: cyrillicToMongol(document.getElementById('inputText').value)
+  };
+  if (cat === 'albanbichig'){
+    docData.addressee = cyrillicToMongol(document.getElementById('addresseeName').value);
+    docData.subject = cyrillicToMongol(document.getElementById('docSubject').value);
+  } else if (cat === 'zahiramjlal'){
+    docData.orgTitle = cyrillicToMongol(document.getElementById('orgTitle').value);
+    docData.docKind = cyrillicToMongol(document.getElementById('docKind').value);
+    docData.date = digitsToMongol(cyrillicToMongol(document.getElementById('docDate').value || '________ оны ____ сарын ____ өдөр'));
+    docData.city = cyrillicToMongol(document.getElementById('cityName').value);
+    docData.subject = cyrillicToMongol((document.getElementById('docSubjectZ') || {}).value || '');
+  }
+
+  // Загвар файлыг серверээс уншиж утгуудыг орлуулах хэсэг
+  try {
+    const response = await fetch(templateName);
+    if (!response.ok){
+      throw new Error('"' + templateName + '" загвар файл олдсонгүй! Загвар Word файлуудаа вэбийнхээ хавтсанд хийсэн эсэхээ шалгана уу.');
+    }
+    const content = await response.arrayBuffer();
+    const zip = new PizZip(content);
+    const doc = new window.docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
+    doc.render(docData);
+    const out = doc.getZip().generate({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    saveAs(out, 'Mongol_Bichig_' + paperKey + '.docx');
+    if (statusEl) statusEl.textContent = '✅ Амжилттай татагдлаа';
+  } catch (error){
+    console.error('Алдаа гарлаа:', error);
+    if (statusEl) statusEl.textContent = '';
+    alert('Алдаа гарлаа: ' + error.message);
+  }
+}
+
+// Хянасан/Боловсруулсан/Хувь тэмдэглэлийг ТУСДАА, ганц хуудастай docx болгож үүсгэнэ.
+// MNS 5140-2:2021: "...баримт бичгийн сүүлийн хуудасны арын зүүн доод хэсэгт, зүүн захаас
+// 15мм, доод захаас 15мм зай авч байрлуулна" — учир нь энэ нь голлон урсдаг гол бичвэрийн
+// хажууд биш, ТУСДАА хуудас тул яг энэ буланд найдвартай бэхлэх боломжтой: хуудасны зах
+// (margin)-ыг өөрөө 15мм болгож, агуулгыг доод (vAlign=bottom) байрлуулснаар зах = 15мм
+// шаардлагыг шууд, найдвартай хангана (floating text box шаардахгүй).
+async function downloadNoteDocx(){
+  const preparedRaw = document.getElementById('preparedBy').value.trim();
+  const checkedRaw = document.getElementById('checkedBy').value.trim();
+  const copyRaw = document.getElementById('copyNote').value.trim();
+  if (!preparedRaw && !checkedRaw && !copyRaw){
+    alert('Боловсруулсан, Хянасан, эсвэл Хувь талбарын дор нэгийг нь бөглөнө үү.');
+    return;
+  }
+  if (typeof JSZip === 'undefined'){
+    alert('Docx үүсгэх сан (JSZip) ачаалагдсангүй. Интернэт холболтоо шалгаад дахин оролдоно уу.');
+    return;
+  }
+  const statusEl = document.getElementById('noteDocxStatus');
+  if (statusEl) statusEl.textContent = 'Бэлдэж байна...';
+
+  const paperKey = (document.getElementById('notePaperSize') || {}).value || 'A4';
+  const base = PAPER_CONFIG[paperKey] || PAPER_CONFIG.A4;
+  const marginMm = 15; // MNS 5140-2: зүүн болон доод захаас 15мм
+  const isLandscape = base.width > base.height;
+
+  // MonScript-ийн жинхэнэ загвараас (хэрэглэгчийн screenshot): Хувь/Боловсруулсан/Хянасан
+  // гурав НЭГ баганад дараалаад бичигдэхгүй, харин тус бүр ӨӨРИЙН нарийн БАГАНАД зэрэгцээ
+  // байрлана ("нэг шугаманд" эхэлнэ), Боловсруулсан/Хянасан баганад нэр нь гарын үсэг зурах
+  // ЗАЙ авсны дараа бичигдэнэ. АНХААР: tbLrV эргүүлэлтийн улмаас vAlign=top нь бодит хуудсан
+  // дээр ЗҮҮН-ДООД буланд буудгийг өмнө нь баталгаажуулсан (хэрэглэгчийн Word screenshot-оор)
+  // — энэ нь бүх 3 баганад НЭГ адил дэд захад "тулж" (доод шугам нийтлэг) харагдуулна.
+  const gapPara = '<w:p><w:pPr><w:spacing w:before="0" w:after="500"/></w:pPr></w:p>';
+  function noteColumn(label, name){
+    let xml = mongolParagraph(label, 20, {align:'right', afterTwips:0});
+    if (name){
+      xml += gapPara;
+      xml += mongolParagraph(name, 20, {align:'right', afterTwips:0});
+    }
+    return xml || '<w:p/>';
+  }
+  const noteCols = [];
+  if (copyRaw) noteCols.push({ label: 'Хувь: ' + copyRaw, name: '' });
+  if (preparedRaw) noteCols.push({ label: 'Боловсруулсан:', name: preparedRaw });
+  if (checkedRaw) noteCols.push({ label: 'Хянасан:', name: checkedRaw });
+
+  const cellHeightTwips = mmToTwips(base.height - marginMm * 2);
+  const colWidthTwips = mmToTwips(16); // нарийн багана — нэг мөр Монгол бичгийн текстэд хангалттай
+  const margins0 = '<w:tcMar><w:top w:w="40" w:type="dxa"/><w:left w:w="40" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="40" w:type="dxa"/></w:tcMar>';
+  const noBorders = '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>';
+  let gridXml = '', cellsXml = '';
+  for (const col of noteCols){
+    gridXml += '<w:gridCol w:w="' + colWidthTwips + '"/>';
+    const colXml = noteColumn(col.label, col.name);
+    cellsXml += '<w:tc><w:tcPr><w:tcW w:w="' + colWidthTwips + '" w:type="dxa"/>' + noBorders + margins0 +
+      '<w:textDirection w:val="tbLrV"/><w:vAlign w:val="top"/></w:tcPr>' + colXml + '</w:tc>';
+  }
+  const totalWTwips = colWidthTwips * noteCols.length;
+  const tableXml = '<w:tbl><w:tblPr><w:tblW w:w="' + totalWTwips + '" w:type="dxa"/>' +
+    '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/>' +
+    '<w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr>' +
+    '<w:tblGrid>' + gridXml + '</w:tblGrid>' +
+    '<w:tr><w:trPr><w:trHeight w:val="' + cellHeightTwips + '" w:hRule="exact"/></w:trPr>' + cellsXml + '</w:tr></w:tbl>';
+
+  const sectPrXml = '<w:sectPr>' +
+    '<w:pgSz w:w="' + mmToTwips(base.width) + '" w:h="' + mmToTwips(base.height) + '"' + (isLandscape ? ' w:orient="landscape"' : '') + '/>' +
+    '<w:pgMar w:top="' + mmToTwips(marginMm) + '" w:right="' + mmToTwips(marginMm) + '" w:bottom="' + mmToTwips(marginMm) + '" w:left="' + mmToTwips(marginMm) + '" w:header="0" w:footer="0" w:gutter="0"/>' +
+    '</w:sectPr>';
+
+  const documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:body>' + tableXml + sectPrXml + '</w:body></w:document>';
+
+  const contentTypesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '</Types>';
+
+  const rootRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>';
+
+  try {
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', contentTypesXml);
+    zip.folder('_rels').file('.rels', rootRelsXml);
+    zip.folder('word').file('document.xml', documentXml);
+    const blob = await zip.generateAsync({ type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hyanasan-bolovsruulsan-temdeglel.docx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (statusEl) statusEl.textContent = '✅ Татагдлаа';
+  } catch(e){
+    console.error(e);
+    if (statusEl) statusEl.textContent = '';
+    alert('Тэмдэглэл үүсгэхэд алдаа гарлаа: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
