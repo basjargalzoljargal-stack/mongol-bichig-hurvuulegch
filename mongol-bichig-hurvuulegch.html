@@ -168,12 +168,35 @@
   }
   input[type=file]{display:none;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 </head>
 <body>
+
+<!-- ============ НЭВТРЭХ GATE (Firebase Auth) ============ -->
+<div id="loginGate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f6f9;font-family:'Segoe UI', Arial, sans-serif;">
+  <div style="background:#fff;border:1px solid #dfe4ea;border-radius:12px;padding:32px;width:100%;max-width:360px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+    <h2 style="margin:0 0 4px;font-size:18px;color:#0f3d78;">Нэвтрэх</h2>
+    <p style="margin:0 0 20px;font-size:13px;color:#667085;">Энэ хэрэгслийг ашиглахын тулд танд өгөгдсөн и-мэйл, нууц үгээр нэвтэрнэ үү.</p>
+    <input type="email" id="loginEmail" placeholder="И-мэйл хаяг" style="width:100%;padding:10px 12px;margin-bottom:10px;border:1px solid #dfe4ea;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    <input type="password" id="loginPassword" placeholder="Нууц үг" style="width:100%;padding:10px 12px;margin-bottom:14px;border:1px solid #dfe4ea;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    <button id="loginBtn" style="width:100%;background:#1a5fb4;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;">Нэвтрэх</button>
+    <div id="loginError" style="margin-top:12px;font-size:13px;color:#b3261e;display:none;"></div>
+    <div id="loginLoading" style="margin-top:12px;font-size:13px;color:#667085;display:none;">Шалгаж байна...</div>
+  </div>
+</div>
+
+<div id="appContent" style="display:none;">
 <div class="wrap">
-  <h1>Кирилл → Монгол бичиг хөрвүүлэгч</h1>
-  <div style="background:#fff3cd;border:2px solid #e6a700;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:13px;font-weight:700;color:#7a5200;">
-    ⚙️ ХУВИЛБАР: v30 — 2026-07-14 (Word ЗАГВАР (.docx template) + docxtemplater ашигладаг болсон — гараар угсарсан OOXML аргыг орхив). ⚠️ ЗААВАЛ: A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx загвар файлуудыг энэ html-тэй ИЖИЛ хавтсанд байрлуулж, ВЕБ СЕРВЕРЭЭР үзэх шаардлагатай (local file:// дээр fetch() ажиллахгүй). Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+    <h1 style="margin:0;">Кирилл → Монгол бичиг хөрвүүлэгч</h1>
+    <div style="font-size:13px;color:#667085;display:flex;align-items:center;gap:10px;">
+      <span id="loggedInEmail"></span>
+      <button id="logoutBtn" class="secondary" style="padding:6px 12px;font-size:12.5px;">Гарах</button>
+    </div>
+  </div>
+  <div style="background:#fff3cd;border:2px solid #e6a700;border-radius:8px;padding:8px 14px;margin-bottom:12px;margin-top:10px;font-size:13px;font-weight:700;color:#7a5200;">
+    ⚙️ ХУВИЛБАР: v31 — 2026-07-14 (Firebase Authentication нэвтрэх систем нэмэгдсэн). ⚠️ ЗААВАЛ: A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx загвар файлуудыг энэ html-тэй ИЖИЛ хавтсанд байрлуулж, ВЕБ СЕРВЕРЭЭР үзэх шаардлагатай (local file:// дээр fetch() ажиллахгүй). Хэрэв энэ шар хайрцаг ХАРАГДАХГҮЙ бол та ХУУЧИН кэшлэгдсэн хуудсыг үзэж байна.
   </div>
   <p class="subtitle">Кирилл бичгээр текст оруулаад, байгууллагын бланк дээр байрлуулсан бэлэн Word (.doc) файл татаж авна. Хөрвүүлэлт нь ~23,000 үгтэй толь бичигт (toli.query.mn) суурилсан тул түүхэн зөв бичлэгтэй илүү нийцтэй.</p>
 
@@ -330,6 +353,7 @@
     </div>
   </div>
 </div>
+</div><!-- /#appContent -->
 
 <script src="mongol-dict-data.js"></script>
 <script src="mongol-wordlist.js"></script>
@@ -343,6 +367,73 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.44.0/docxtemplater.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
+// ===== Firebase Authentication (нэвтрэх gate) =====
+// АНХААР: энд зөвхөн апп нэрлэлт/түлхүүр (apiKey) байгаа тул нууц биш —
+// жинхэнэ хамгаалалт нь Firebase Console дээр "Email/Password" гэдэг
+// нэвтрэх аргыг зөвшөөрч, ХЭРЭГЛЭГЧИЙГ ТА ГАРААР НЭМСНЭЭР хийгддэг
+// (олон нийтийн бүртгүүлэлт (signup) энэ хуудсанд байхгүй).
+const firebaseConfig = {
+  apiKey: "AIzaSyDFf51tYzf06bLrYtl95gH7p7oM8JkjC68",
+  authDomain: "mongol-bichig-hurvuulegch.firebaseapp.com",
+  projectId: "mongol-bichig-hurvuulegch",
+  storageBucket: "mongol-bichig-hurvuulegch.firebasestorage.app",
+  messagingSenderId: "865611475696",
+  appId: "1:865611475696:web:db1eb6f920d0af8ab0b035"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(function(user){
+  const gate = document.getElementById('loginGate');
+  const app = document.getElementById('appContent');
+  const emailSpan = document.getElementById('loggedInEmail');
+  if (user){
+    gate.style.display = 'none';
+    app.style.display = 'block';
+    if (emailSpan) emailSpan.textContent = user.email;
+  } else {
+    gate.style.display = 'flex';
+    app.style.display = 'none';
+  }
+});
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const loadEl = document.getElementById('loginLoading');
+  errEl.style.display = 'none';
+  if (!email || !password){
+    errEl.textContent = 'И-мэйл болон нууц үгээ оруулна уу.';
+    errEl.style.display = 'block';
+    return;
+  }
+  loadEl.style.display = 'block';
+  auth.signInWithEmailAndPassword(email, password)
+    .catch(function(error){
+      loadEl.style.display = 'none';
+      let msg = 'Нэвтрэхэд алдаа гарлаа: ' + error.message;
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found'){
+        msg = 'И-мэйл эсвэл нууц үг буруу байна.';
+      } else if (error.code === 'auth/invalid-email'){
+        msg = 'И-мэйл хаяг буруу байна.';
+      } else if (error.code === 'auth/too-many-requests'){
+        msg = 'Хэт олон удаа буруу оролдлого хийсэн тул түр хугацаанд хориглогдлоо.';
+      }
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const pwField = document.getElementById('loginPassword');
+  if (btn) btn.addEventListener('click', doLogin);
+  if (pwField) pwField.addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); });
+  if (logoutBtn) logoutBtn.addEventListener('click', function(){ auth.signOut(); });
+});
+
 // ===== Зөв бичгийн алдаа шалгагч =====
 // WORDLIST глобал Set нь mongol-wordlist.js файлаас ачаалагдана (~46,000 үг)
 // Кирилл хэлний залгамал (агглютинатив) байдлаас болж тольд байхгүй хувирсан хэлбэрүүдийг
