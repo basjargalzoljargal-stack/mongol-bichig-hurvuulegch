@@ -973,27 +973,34 @@ function convertText(){
 // АНХААРАХ: эдгээр зургууд нь ЖИНХЭНЭ хоосон бланк БИШ (өөр tool-ын жишээ текст шатсан
 // дэлгэцний зураг) тул шинэ текст хуучин жишээ текст дээр ДАВХАРЛАЖ БУЙГ (overlap) анзаараарай
 // — хэрэв танд цэвэр хоосон бланкны scan/зураг байвал тэдгээрээр солиход илүү цэвэрхэн болно.
+// Эдгээр px-байрлалууд нь таамгаар БИШ, харин баталгаажсан бодит .docx загваруудын
+// (A4_AlbanBichig.docx, A5_AlbanBichig.docx, A4_Zahiramj.docx) хүснэгтийн баганын өргөн/
+// зайг (MNS 6395:2022-т нийцүүлж яг тохируулсан twips утгууд) шууд мм рүү, дараа нь энэ
+// зургийн пиксел рүү хөрвүүлж гаргасан — ингэснээр Preview яг татаж авах Word файлтай
+// 100% ижил байрлалтай гарна. Бүх 3 загварт: дээд зах 25мм, зүүн/баруун/доод зах 15мм.
+// А4: багана 1 (37мм, хоосон/бланкны хэсэг) → багана 2 (44мм, Хэнд+Тэргүүн НЭГ баганад
+// дараалж, <br> зайтай — яг docx-ийн адил, ЭНЭ УЧИР ХОЁР ХЭСЭГ ХЭЗЭЭ Ч ДАВХЦАХГҮЙ) →
+// багана 3 (186мм, гол бичвэр).
 const LETTERHEAD_CONFIG = {
   A4_albanbichig: {
     img: 'letterhead-A4.png', imgW: 1176, imgH: 826,
     fields: {
-      addressee: { left: 260, top: 158, width: 150, height: 320, fontSize: 16 },
-      subject:   { left: 260, top: 496, width: 150, height: 280, fontSize: 16 },
-      mainText:  { left: 415, top: 128, width: 715, height: 655, fontSize: 17 }
+      addresseeSubject: { left: 206, top: 98, width: 174, height: 669, fontSize: 16 },
+      mainText:  { left: 380, top: 98, width: 737, height: 669, fontSize: 17 }
     }
   },
   A5_albanbichig: {
     img: 'letterhead-A5.png', imgW: 794, imgH: 561,
     fields: {
-      addressee: { left: 288, top: 100, width: 140, height: 410, fontSize: 16 },
-      mainText:  { left: 378, top: 90,  width: 384, height: 431, fontSize: 16 }
+      addressee: { left: 284, top: 95, width: 76,  height: 409, fontSize: 16 },
+      mainText:  { left: 359, top: 95, width: 378, height: 409, fontSize: 16 }
     }
   },
   zahiramjlal: {
     img: 'letterhead-Zahiramj.png', imgW: 1180, imgH: 822,
     fields: {
-      subject:   { left: 233, top: 220, width: 140, height: 460, fontSize: 15 },
-      mainText:  { left: 312, top: 128, width: 828, height: 650, fontSize: 17 }
+      subject:   { left: 219, top: 98, width: 79,  height: 665, fontSize: 15 },
+      mainText:  { left: 298, top: 98, width: 823, height: 665, fontSize: 17 }
     }
   }
 };
@@ -1037,8 +1044,20 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     const fs = Math.max(9, Math.round(fieldCfg.fontSize * scaleAvg));
     return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + html + '</div>';
   }
-  if (f.addressee && addresseeRaw.trim()) fieldsHtml += placeField(f.addressee, mongolLine(addresseeRaw));
-  if (f.subject && subjectRaw.trim()) fieldsHtml += placeField(f.subject, mongolLine(subjectRaw));
+  // Хэнд хандах (addressee) болон Тэргүүн (subject) нь docx загвар дээрхтэй адил НЭГ
+  // баганад дараалж бичигдэнэ (эхлээд хэнд, зай, дараа нь тэргүүн) — 2 тусдаа хайрцаг
+  // байхгүй тул хэзээ ч давхцахгүй.
+  if (f.addresseeSubject){
+    const a = mongolLine(addresseeRaw);
+    const s = mongolLine(subjectRaw);
+    let combined = a;
+    if (a && s) combined += '<br><br><br>';
+    combined += s;
+    if (combined) fieldsHtml += placeField(f.addresseeSubject, combined);
+  } else {
+    if (f.addressee && addresseeRaw.trim()) fieldsHtml += placeField(f.addressee, mongolLine(addresseeRaw));
+    if (f.subject && subjectRaw.trim()) fieldsHtml += placeField(f.subject, mongolLine(subjectRaw));
+  }
   fieldsHtml += placeField(f.mainText, renderMongolHtml(lastConverted));
 
   box.innerHTML =
