@@ -1035,7 +1035,7 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     const w = Math.round(fieldCfg.width * scaleX);
     const h = Math.round(fieldCfg.height * scaleY);
     const fs = Math.max(9, Math.round(fieldCfg.fontSize * scaleAvg));
-    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + html + '</div>';
+    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + html + '</div>';
   }
   if (f.addressee && addresseeRaw.trim()) fieldsHtml += placeField(f.addressee, mongolLine(addresseeRaw));
   if (f.subject && subjectRaw.trim()) fieldsHtml += placeField(f.subject, mongolLine(subjectRaw));
