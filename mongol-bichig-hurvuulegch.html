@@ -1046,15 +1046,21 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     // ингэснээр хайрцгийн зүүн ирмэг рүү наалдаж харагдахгүй, харин бага зэрэг
     // баруун тийш шилжиж, доошоо голлож харагдана. Гол бичвэр (mainText) хэвээрээ
     // зүүн дээд буланд наалдана (урт текстэд илүү тохиромжтой).
-    // justify-content нь vertical-lr бичвэрийн ГОЛ (босоо, дээрээс доош) тэнхлэгийг голлуулна.
-    // Хэвтээ (зүүн-баруун) байрлалыг hPercent (0=яг зүүн ирмэгт, 50=голд, 100=яг баруун
-    // ирмэгт) хувиар нарийвчлан тохируулна — align-items:flex-start-ийг суурь болгож,
-    // margin-left:hPercent%-иар нааш цааш зөөнө (энэ нь бичвэрийн урт багассан ч тогтвортой
-    // ажиллана, учир нь margin-left хувь нь эцэг хайрцгийн ӨРГӨНӨӨС тооцогдоно).
+    // Хэнд хандах/Тэргүүн зэрэг жижиг хайрцгуудад бичвэрийг hPercent-ээр (0=зүүн ирмэг,
+    // 50=голд, 100=баруун ирмэг) нарийн тааруулна. "left:X%; transform:translateX(-X%)"
+    // хослол нь бичвэрийн өөрийнх нь ӨРГӨНӨӨС үл хамааран яг X хувьд нь байрлуулдаг
+    // (жижиг margin-тэй харьцуулахад богино текстийг хайрцгаас гадагшлуулж алдагдуулахгүй,
+    // учир нь эцэст нь өөрийнхөө өргөний Х хувиар буцаж шилждэг) — олон удаагийн туршилтаар
+    // margin-left хувь нь богино үгэнд хайрцгаас гадагш гарган алдаатай харагдсан тул
+    // сольсон. Босоогоор (дээрээс доош) top:50%+translateY(-50%)-ээр үргэлж голлоно.
     const hPercent = (fieldCfg.hPercent === undefined) ? 50 : fieldCfg.hPercent;
-    const flexStyle = centered ? ('display:flex;align-items:flex-start;justify-content:center;') : '';
-    const inner = centered ? ('<div style="max-width:100%;max-height:100%;overflow:hidden;margin-left:' + hPercent + '%;">' + html + '</div>') : html;
-    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;' + flexStyle + '">' + inner + '</div>';
+    // ЗҮҮНИЙГ: outer div нь өөрөө аль хэдийн position:absolute тул inner-ийн
+    // байрлалын "containing block" болоод өгдөг — дахин position:relative нэмэх
+    // шаардлагагүй (нэмбэл position:absolute-ийг дарж бичээд байрлал эвдэрдэг байсан).
+    const inner = centered
+      ? ('<div style="position:absolute;top:50%;left:' + hPercent + '%;max-width:96%;transform:translate(-' + hPercent + '%,-50%);white-space:nowrap;">' + html + '</div>')
+      : html;
+    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + inner + '</div>';
   }
   // Хэнд хандах (addressee) болон Тэргүүн (subject) нь docx загвар дээрхтэй адил НЭГ
   // баганад дараалж бичигдэнэ (эхлээд хэнд, зай, дараа нь тэргүүн) — 2 тусдаа хайрцаг
