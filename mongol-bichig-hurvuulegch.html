@@ -115,6 +115,21 @@
     margin:0 1px;
   }
   .placeholder{color:var(--muted);font-size:13px;align-self:center;}
+  /* Зөвхөн бичвэр хэвлэх горим: #printOnlyArea нь дэлгэцэнд ХЭЗЭЭ Ч харагдахгүй
+     (эндхийн урьдчилан харах хэсэгт нөлөөлөхгүй), харин window.print() дуудагдахад
+     JS-ээр body-д "printing-letterhead-only" класс нэмж, ЗӨВХӨН #printOnlyArea-г
+     харуулж, бусад бүх элементийг нуудаг — ингэснээр хэвлэмэл дээр зөвхөн текст,
+     бланкны зураг/лого ОГТ ороохгүй.*/
+  #printOnlyArea{display:none;}
+  @media print{
+    body.printing-letterhead-only > *:not(#printOnlyArea){display:none!important;}
+    body.printing-letterhead-only #printOnlyArea{
+      display:block!important;position:absolute;top:0;left:0;margin:0;padding:0;
+      background:transparent!important;
+    }
+    #printOnlyArea .mongol-vertical{color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    @page{margin:0;}
+  }
   .upload-row{
     border:1px dashed var(--border);
     border-radius:8px;
@@ -323,10 +338,14 @@
 
       <div class="row">
         <button onclick="downloadDocx()">Word файл татах (.docx)</button>
+        <button class="secondary" onclick="printLetterheadOnly()">🖶 Шууд хэвлэх (зөвхөн бичвэр, бланкгүй)</button>
         <span id="docxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
       </div>
       <div class="note">
         📄 Энэ товч таны бөглөсөн мэдээллийг (Хэнд хандах, Тэргүү, огноо, гол бичвэр г.м) бэлэн Word загвар (.docx) руу шууд шидэж, бүрэн бэлэн, хэвлэхэд бэлэн файл болгож татна. Загвар файл дотор аль хэдийн зөв байрлал, зай тохируулагдсан тул зураг, CSS шаардлагагүй. Татсан Word файлаа нээгээд шууд хэвлэх эсвэл хэвлэмэл хуудсан дээрээ хэвлэж болно.
+      </div>
+      <div class="note">
+        🖶 "Шууд хэвлэх" товч нь дэлгэцийн урьдчилан харагдацтай ЯГ АДИЛ байрлалаар, гэхдээ бланкны зураг (лого, байгууллагын нэр/хаяг) ОРООХГҮЙгээр, зөвхөн хөрвүүлсэн бичвэрийг л хэвлэнэ — учир нь та байгууллагынхаа биет хэвлэмэл (бланк) цаасан дээр шууд хэвлэхэд зориулагдсан.
       </div>
       <div class="note">
         ⚠️ Хөрвүүлэлт нь толь бичиг + үсэг тулгах зарчим хосолсон тул зарим (ялангуяа хувирсан/залгаварт) үг бүрэн 100% нарийвчлал баталгаагүй. Албан бичигт ашиглахын өмнө хянуулахыг зөвлөж байна. Тоо (0-9), латин үсэг, имэйл, %, огноо зэргийг босоо бичгийн урсгал дунд хэвтээгээр, зөв дараалалтай харуулахаар тусад нь тохируулсан (MonScript-ийн үнэгүй хувилбарт тоо алдаж байсан асуудлыг анхаарч). Word дээр нээгдэхэд бичиг зөв харагдахгүй бол "Mongolian Baiti" фонт суулгасан эсэхээ шалгана уу (Windows дээр стандартаар байдаг).
@@ -1635,6 +1654,95 @@ async function downloadNoteDocx(){
     alert('Тэмдэглэл үүсгэхэд алдаа гарлаа: ' + e.message);
   }
 }
+
+// "Шууд хэвлэх" (зөвхөн бичвэр, бланкны зурагГҮЙ) — дэлгэцийн урьдчилан харагдацтай
+// (renderPreviewWithLetterheadImage) яг АДИЛ hPercent/голлолтын логикийг ашиглана,
+// гэхдээ px (620px дэлгэц) БИШ, харин ЖИНХЭНЭ мм (paperBase.width/height)-ээр
+// хэмждэг тул хэвлэхэд ЯГ бодит цаасны хэмжээгээр гарна. Бланкны зураг (background-image)
+// ЗОРИУДЛАН ОРОХГҮЙ — учир нь энэ нь байгууллагын биет хэвлэмэл (лого/нэр/хаяг
+// урьдчилан хэвлэгдсэн) цаасан дээр шууд хэвлэхэд зориулагдсан тул зураг ороовол
+// давхарч будлина.
+function printLetterheadOnly(){
+  if (!lastConverted || !lastConverted.trim()){
+    alert('Эхлээд Кирилл текст оруулаад "Хөрвүүлэх" товч дарна уу.');
+    return;
+  }
+  const cat0 = document.getElementById('docCategory').value;
+  const paperKey0 = (document.getElementById('paperSize') || {}).value || 'A4';
+  const lhCfg = letterheadConfigFor(cat0, paperKey0);
+  if (!lhCfg){
+    alert('Энэ баримт бичгийн төрөлд бланкны байрлал одоогоор тохируулагдаагүй байна.');
+    return;
+  }
+  const paperBase = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey0]) ? PAPER_CONFIG[paperKey0] : { width:297, height:210 };
+  const scaleXmm = paperBase.width / lhCfg.imgW;
+  const scaleYmm = paperBase.height / lhCfg.imgH;
+  const scaleAvgMm = (scaleXmm + scaleYmm) / 2;
+
+  const addresseeRaw = (document.getElementById('addresseeName') || {}).value || '';
+  const subjectRaw = (cat0 === 'zahiramjlal')
+    ? ((document.getElementById('docSubjectZ') || {}).value || '')
+    : ((document.getElementById('docSubject') || {}).value || '');
+
+  const f = lhCfg.fields;
+  function placeFieldMm(fieldCfg, html, centered){
+    if (!fieldCfg || !html) return '';
+    const left = (fieldCfg.left * scaleXmm).toFixed(2);
+    const top = (fieldCfg.top * scaleYmm).toFixed(2);
+    const w = (fieldCfg.width * scaleXmm).toFixed(2);
+    const h = (fieldCfg.height * scaleYmm).toFixed(2);
+    // мм-ийн фонтын хэмжээ 3.2мм-с (~9pt) багасахгүй байхаар хязгаарлав.
+    const fs = Math.max(3.2, fieldCfg.fontSize * scaleAvgMm).toFixed(2);
+    const hPercent = (fieldCfg.hPercent === undefined) ? 50 : fieldCfg.hPercent;
+    const inner = centered
+      ? ('<div style="position:absolute;top:50%;left:' + hPercent + '%;max-width:96%;transform:translate(-' + hPercent + '%,-50%);white-space:nowrap;">' + html + '</div>')
+      : html;
+    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'mm;top:' + top + 'mm;width:' + w + 'mm;height:' + h + 'mm;min-height:0;max-height:' + h + 'mm;font-size:' + fs + 'mm;overflow:hidden;">' + inner + '</div>';
+  }
+
+  let fieldsHtml = '';
+  if (f.addresseeSubject){
+    const a = mongolLine(addresseeRaw);
+    const s = mongolLine(subjectRaw);
+    let combined = a;
+    if (a && s) combined += '<br><br><br>';
+    combined += s;
+    if (combined) fieldsHtml += placeFieldMm(f.addresseeSubject, combined, true);
+  } else {
+    if (f.addressee && addresseeRaw.trim()) fieldsHtml += placeFieldMm(f.addressee, mongolLine(addresseeRaw), true);
+    if (f.subject && subjectRaw.trim()) fieldsHtml += placeFieldMm(f.subject, mongolLine(subjectRaw), true);
+  }
+  fieldsHtml += placeFieldMm(f.mainText, renderMongolHtml(lastConverted));
+
+  // @page хэмжээг сонгосон цаасны хэмжээгээр динамикаар тохируулна (хэвтээ, margin=0
+  // — margin-ыг бид өөрсдөө fieldCfg-ийн left/top-т аль хэдийн тооцсон).
+  let pageStyle = document.getElementById('printPageStyle');
+  if (!pageStyle){
+    pageStyle = document.createElement('style');
+    pageStyle.id = 'printPageStyle';
+    document.head.appendChild(pageStyle);
+  }
+  pageStyle.textContent = '@page{size:' + paperBase.width + 'mm ' + paperBase.height + 'mm;margin:0;}';
+
+  const area = document.getElementById('printOnlyArea');
+  area.style.width = paperBase.width + 'mm';
+  area.style.height = paperBase.height + 'mm';
+  area.innerHTML = fieldsHtml;
+
+  document.body.classList.add('printing-letterhead-only');
+  const cleanup = function(){
+    document.body.classList.remove('printing-letterhead-only');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  // Хэвлэх диалог гарахаас өмнө DOM-ыг браузер бодитоор зурж амжих багахан хугацаа өгнө.
+  setTimeout(function(){
+    window.print();
+    // Зарим браузер дээр afterprint эвент найдваргүй тул нөөц болгон 2 секундын дараа ч цэвэрлэнэ.
+    setTimeout(cleanup, 2000);
+  }, 50);
+}
 </script>
+<div id="printOnlyArea"></div>
 </body>
 </html>
