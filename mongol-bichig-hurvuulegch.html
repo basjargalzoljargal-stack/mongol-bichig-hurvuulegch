@@ -983,15 +983,15 @@ const LETTERHEAD_CONFIG = {
   A4_albanbichig: {
     img: 'letterhead-A4-new.png', imgW: 1176, imgH: 826,
     fields: {
-      addressee: { left: 208, top: 132, width: 170, height: 296, fontSize: 16 },
-      subject:   { left: 208, top: 471, width: 94,  height: 290, fontSize: 15 },
+      addressee: { left: 208, top: 132, width: 170, height: 296, fontSize: 16, hAlign: 'start' },
+      subject:   { left: 208, top: 471, width: 94,  height: 290, fontSize: 15, hAlign: 'end' },
       mainText:  { left: 368, top: 132, width: 743, height: 627, fontSize: 17 }
     }
   },
   A5_albanbichig: {
     img: 'letterhead-A5-new.png', imgW: 794, imgH: 561,
     fields: {
-      addressee: { left: 206, top: 161, width: 133, height: 279, fontSize: 15 },
+      addressee: { left: 206, top: 161, width: 133, height: 279, fontSize: 15, hAlign: 'end' },
       mainText:  { left: 329, top: 113, width: 406, height: 406, fontSize: 16 }
     }
   },
@@ -1046,7 +1046,11 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     // ингэснээр хайрцгийн зүүн ирмэг рүү наалдаж харагдахгүй, харин бага зэрэг
     // баруун тийш шилжиж, доошоо голлож харагдана. Гол бичвэр (mainText) хэвээрээ
     // зүүн дээд буланд наалдана (урт текстэд илүү тохиромжтой).
-    const flexStyle = centered ? 'display:flex;align-items:center;justify-content:center;text-align:center;' : '';
+    // hAlign: 'start' - зүүн тийш, 'end' - баруун тийш, өгөгдөөгүй бол голд (center).
+    // justify-content нь vertical-lr бичвэрийн ГОЛ (босоо, дээрээс доош) тэнхлэгийг,
+    // харин align-items нь ХӨНДЛӨН (хэвтээ, зүүн-баруун) тэнхлэгийг удирддаг.
+    const hAlignCss = fieldCfg.hAlign === 'start' ? 'flex-start' : (fieldCfg.hAlign === 'end' ? 'flex-end' : 'center');
+    const flexStyle = centered ? ('display:flex;align-items:' + hAlignCss + ';justify-content:center;text-align:' + (fieldCfg.hAlign === 'start' ? 'left' : (fieldCfg.hAlign === 'end' ? 'right' : 'center')) + ';') : '';
     const inner = centered ? '<div style="max-width:100%;max-height:100%;overflow:hidden;">' + html + '</div>' : html;
     return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;' + flexStyle + '">' + inner + '</div>';
   }
