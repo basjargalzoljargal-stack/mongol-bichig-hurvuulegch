@@ -107,30 +107,23 @@
      нэг хувилбараар (жишээ нь өөр эх сурвалжаас) суулгасан байж болох тул хуулж
      Word-т тавихад аль ч нэрээр олдвол зөв фонтоор харагдахын тулд ХОЁУЛАНГ НЬ доор
      @font-face-ээр мөн CSS жагсаалтад бүртгэв (2 нэр — 1 embed хийсэн файл). */
-  @font-face{
-    font-family:'Classical Mongolian Dashtseden';
-    src:url('cmdashitseden.ttf') format('truetype');
-    font-display:swap;
-  }
-  @font-face{
-    font-family:'Classical Mongolian Dashitseden';
-    src:url('cmdashitseden.ttf') format('truetype');
-    font-display:swap;
-  }
   /* U+180E (MVS - эгшиг тусгаарлагч, эрхийн залгаварт "᠎" гэж ашигладаг үл үзэгдэх тэмдэгт)-ийг
      cmdashitseden.ttf файл дотор ХАРАГДАХ хайрцаг (tofu, "□!" маягийн) байдлаар буруу зурдаг нь
-     тогтоогдсон тул яг энэ нэг кодын цэгийг ГАНЦААР нь unicode-range-ээр өөр фонт руу чиглүүлж,
-     үл үзэгдэх (зөв) байдлаар харуулна. Mongolian Baiti (Windows-д стандарт) болон ердийн
-     sans-serif аль аль нь энэ тэмдэгтийг зөв (үл үзэгдэх) харуулдгийг тестээр баталгаажуулсан. */
+     тогтоогдсон. Иймд энэ фонтын unicode-range-ээс яг энэ нэг кодын цэгийг ЗОРИУДААР хассан —
+     ингэснээр тухайн тэмдэгт гарч ирэхэд браузер автоматаар дараагийн фонт руу (доорх
+     font-family жагсаалт дахь 'Mongolian Baiti', эсвэл эцэст нь sans-serif) шилждэг ба тэдгээр
+     фонтод энэ тэмдэгт зөв (үл үзэгдэх) харагддагийг тестээр баталгаажуулсан. */
   @font-face{
     font-family:'Classical Mongolian Dashtseden';
-    src:local('Mongolian Baiti'),local('Noto Sans Mongolian');
-    unicode-range:U+180E;
+    src:url('cmdashitseden.ttf') format('truetype');
+    font-display:swap;
+    unicode-range:U+0-180D,U+180F-10FFFF;
   }
   @font-face{
     font-family:'Classical Mongolian Dashitseden';
-    src:local('Mongolian Baiti'),local('Noto Sans Mongolian');
-    unicode-range:U+180E;
+    src:url('cmdashitseden.ttf') format('truetype');
+    font-display:swap;
+    unicode-range:U+0-180D,U+180F-10FFFF;
   }
   .mongol-vertical{
     writing-mode: vertical-lr;
