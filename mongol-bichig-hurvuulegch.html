@@ -1586,6 +1586,28 @@ function letterheadConfigFor(cat, paperKey){
   return null;
 }
 
+// Хэнд хандах/Тэргүүн зэрэг БОГИНО (нэг мөр) талбарт зориулсан хайрцаг руу урт нэр/цол
+// багтахгүй бол (жиш: "ГААЛИЙН ЕРӨНХИЙ ГАЗРЫН ДАРГА Ц.АСРАЛТ ТАНАА") white-space:nowrap-г
+// хассан тул vertical-lr стандарт ёсоор ШИНЭ БАГАНА руу автоматаар үсэрнэ (доош биш,
+// баруун тийш). Гэвч зарим тохиолдолд БҮР олон багана ч хайрцгийн ӨРГӨНД багтахгүй байж
+// болзошгүй тул энд НЭМЭЛТ хамгаалалт болгож фонтын хэмжээг аажмаар багасгаж хайрцагтаа
+// БАГТААНА (хэт жижгэрэхээс сэргийлж доод хязгаартай).
+function autoFitVerticalField(el, minPx, minMm){
+  if (!el) return;
+  const raw = el.style.fontSize || '';
+  const m = raw.match(/^([\d.]+)(px|mm|pt)$/);
+  if (!m) return;
+  let val = parseFloat(m[1]);
+  const unit = m[2];
+  const floor = (unit === 'mm') ? (minMm || 2.2) : (minPx || 9);
+  let guard = 0;
+  while (guard < 40 && val > floor && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)){
+    val = Math.max(floor, val * 0.92);
+    el.style.fontSize = val.toFixed(2) + unit;
+    guard++;
+  }
+}
+
 // Жинхэнэ бланкны зургийг дэвсгэр болгож, LETTERHEAD_CONFIG-д заасан px-байрлалуудад
 // (уг зургийн байгалийн хэмжээст тааруулсан) хөрвүүлсэн текстийг давхарлана.
 // MNS 6395:2022, §3.1: А4 ХЭВТЭЭ = 297мм x 210мм, А5 ХЭВТЭЭ = 210мм x 148мм — эдгээр нь
@@ -1634,9 +1656,9 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     // байрлалын "containing block" болоод өгдөг — дахин position:relative нэмэх
     // шаардлагагүй (нэмбэл position:absolute-ийг дарж бичээд байрлал эвдэрдэг байсан).
     const inner = centered
-      ? ('<div style="position:absolute;top:50%;left:' + hPercent + '%;max-width:96%;transform:translate(-' + hPercent + '%,-50%);white-space:nowrap;">' + html + '</div>')
+      ? ('<div style="position:absolute;top:50%;left:' + hPercent + '%;max-width:96%;transform:translate(-' + hPercent + '%,-50%);">' + html + '</div>')
       : html;
-    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + inner + '</div>';
+    return '<div class="mongol-vertical' + (centered ? ' pf-fit' : '') + '" style="position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;min-height:0;max-height:' + h + 'px;font-size:' + fs + 'px;overflow:hidden;">' + inner + '</div>';
   }
   // Хэнд хандах (addressee) болон Тэргүүн (subject) нь docx загвар дээрхтэй адил НЭГ
   // баганад дараалж бичигдэнэ (эхлээд хэнд, зай, дараа нь тэргүүн) — 2 тусдаа хайрцаг
@@ -1661,6 +1683,8 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     fieldsHtml +
     '</div>' +
     '<div style="margin-top:10px;font-size:10px;color:#b3b8bf;text-align:center;">— ' + (paperBase ? (paperBase.width + '×' + paperBase.height + 'мм') : '') + ' бодит бланкны зураг дээр давхарласан харагдац (зөвхөн дэлгэцэд; Word татахад зураг ороохгүй) —</div>';
+  // Хэнд хандах/Тэргүүн зэрэг богино талбарууд хайрцгаасаа халивал фонтыг автоматаар багасгана.
+  box.querySelectorAll('.pf-fit').forEach(function(el){ autoFitVerticalField(el, 9); });
 }
 
 function renderPreview(){
@@ -2311,9 +2335,9 @@ function printLetterheadOnly(){
     const fs = Math.max(3.2, fieldCfg.fontSize * scaleAvgMm).toFixed(2);
     const hPercent = (fieldCfg.hPercent === undefined) ? 50 : fieldCfg.hPercent;
     const inner = centered
-      ? ('<div style="position:absolute;top:50%;left:' + hPercent + '%;max-width:96%;transform:translate(-' + hPercent + '%,-50%);white-space:nowrap;">' + html + '</div>')
+      ? ('<div style="position:absolute;top:50%;left:' + hPercent + '%;max-width:96%;transform:translate(-' + hPercent + '%,-50%);">' + html + '</div>')
       : html;
-    return '<div class="mongol-vertical" style="position:absolute;left:' + left + 'mm;top:' + top + 'mm;width:' + w + 'mm;height:' + h + 'mm;min-height:0;max-height:' + h + 'mm;font-size:' + fs + 'mm;overflow:hidden;">' + inner + '</div>';
+    return '<div class="mongol-vertical' + (centered ? ' pf-fit' : '') + '" style="position:absolute;left:' + left + 'mm;top:' + top + 'mm;width:' + w + 'mm;height:' + h + 'mm;min-height:0;max-height:' + h + 'mm;font-size:' + fs + 'mm;overflow:hidden;">' + inner + '</div>';
   }
 
   let fieldsHtml = '';
@@ -2351,6 +2375,20 @@ function printLetterheadOnly(){
     window.removeEventListener('afterprint', cleanup);
   };
   window.addEventListener('afterprint', cleanup);
+  // #printOnlyArea нь ЭНГИЙН дэлгэцэд display:none тул (зөвхөн @media print үед харагдана)
+  // .pf-fit хайрцгуудыг хэмжихийн тулд ТҮР ЗУУР дэлгэцэд (харагдахгүй байрлалд: -9999px)
+  // бодитоор "display:block" болгож scrollWidth/clientWidth-ийг зөв хэмждэг болгоно,
+  // дараа нь эдгээр ТҮР inline тохиргоог арилгаж @media print-ийн жинхэнэ байрлал руу буцаана
+  // (эс тэгвэл inline position:fixed нь хэвлэлтийн CSS-ийг дарж хэвлэмэл байрлал эвдэнэ).
+  area.style.position = 'fixed';
+  area.style.left = '-9999px';
+  area.style.top = '0';
+  area.style.display = 'block';
+  area.querySelectorAll('.pf-fit').forEach(function(el){ autoFitVerticalField(el, null, 2.2); });
+  area.style.position = '';
+  area.style.left = '';
+  area.style.top = '';
+  area.style.display = '';
   // Хэвлэх диалог гарахаас өмнө DOM-ыг браузер бодитоор зурж амжих багахан хугацаа өгнө.
   setTimeout(function(){
     window.print();
