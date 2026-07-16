@@ -116,10 +116,10 @@
        СУУЛГАСАН бол автоматаар яг kimo шиг харагдана; суулгаагүй бол Mongolian Baiti руу
        буцна (өмнөх адил). Хэрэв БҮХ зочинд (фонт суулгаагүй ч) баталгаатай ижил харагдуулах
        шаардлагатай бол зөвшөөрөлтэй (SIL OFL) "Noto Sans Mongolian" веб-фонтоор солих хэрэгтэй.*/
-    font-family:'Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif;
-    font-size:30px;
-    letter-spacing:2px;
-    line-height:1.7;
+    font-family:var(--mv-font, 'Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif);
+    font-size:var(--mv-size, 30px);
+    letter-spacing:var(--mv-spacing, 2px);
+    line-height:var(--mv-lh, 1.7);
     min-height:240px;
     white-space:pre-wrap;
     color:#20262e;
@@ -272,6 +272,28 @@
         <div id="converterLeftLabel" style="font-weight:700;font-size:14px;min-width:70px;">Кирилл</div>
         <button type="button" class="secondary" onclick="toggleConverterDirection()" title="Чиглэл сэлгэх" style="padding:8px 12px;font-size:17px;line-height:1;">⇄</button>
         <div id="converterRightLabel" style="font-weight:700;font-size:14px;min-width:110px;">Монгол бичиг</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:-6px 0 16px;padding:10px 12px;background:#f4f6f9;border-radius:8px;font-size:12.5px;color:var(--muted);">
+        <label style="display:flex;align-items:center;gap:6px;">Фонт:
+          <select id="mvFontSelect" onchange="applyMongolStyleSettings()" style="padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;">
+            <option value="dashitseden">Dashitseden (kimo маягийн)</option>
+            <option value="baiti">Mongolian Baiti</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;">Хэмжээ:
+          <input type="range" id="mvSizeRange" min="16" max="48" step="1" value="30" oninput="applyMongolStyleSettings()">
+          <span id="mvSizeVal">30px</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;">Мөр хоорондын зай:
+          <input type="range" id="mvLhRange" min="10" max="25" step="1" value="17" oninput="applyMongolStyleSettings()">
+          <span id="mvLhVal">1.7</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;">Үсэг хоорондын зай:
+          <input type="range" id="mvSpacingRange" min="0" max="8" step="1" value="2" oninput="applyMongolStyleSettings()">
+          <span id="mvSpacingVal">2px</span>
+        </label>
+        <button type="button" class="secondary" onclick="resetMongolStyleSettings()" style="padding:5px 10px;font-size:12px;">Анхны байдалд</button>
       </div>
 
       <div id="c2mPanel" class="grid">
@@ -802,6 +824,7 @@ document.addEventListener('DOMContentLoaded', function(){
   if (suggestDictBtn) suggestDictBtn.addEventListener('click', suggestDictMongol);
   if (addDictBtn) addDictBtn.addEventListener('click', addDictWord);
   if (typeof applyConverterDirectionUI === 'function') applyConverterDirectionUI();
+  if (typeof loadMongolStyleSettings === 'function') loadMongolStyleSettings();
 });
 
 // ===== Зөв бичгийн алдаа шалгагч =====
@@ -1331,6 +1354,68 @@ function applyConverterDirectionUI(){
 function toggleConverterDirection(){
   converterDirection = (converterDirection === 'c2m') ? 'm2c' : 'c2m';
   applyConverterDirectionUI();
+}
+
+// ===== Монгол бичгийн дэлгэцийн тохиргоо (фонт / хэмжээ / зай) =====
+// Бүх .mongol-vertical элемент (Preview, Хянасан/Боловсруулсан/Хувь, урвуу хөрвүүлэлт г.м)
+// нэг дор тохируулагдана — учир нь эдгээр CSS шинж чанарууд нь :root дээрх CSS хувьсагч
+// (--mv-font, --mv-size, --mv-spacing, --mv-lh)-аас уншигддаг тул JS-ээр нэг л удаа
+// document.documentElement дээр тохируулахад бүх газарт шууд нөлөөлнө. Сонголтыг
+// localStorage-т хадгалдаг тул хуудас дахин ачаалахад хэрэглэгчийн сонголт хадгалагдана.
+const MV_FONT_STACKS = {
+  dashitseden: "'Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif",
+  baiti: "'Mongolian Baiti',sans-serif"
+};
+const MV_STYLE_KEY = 'mongolVerticalStyleSettings';
+const MV_DEFAULTS = { font: 'dashitseden', size: 30, lh: 17, spacing: 2 };
+function applyMongolStyleSettings(save){
+  const fontSel = document.getElementById('mvFontSelect');
+  const sizeR = document.getElementById('mvSizeRange');
+  const lhR = document.getElementById('mvLhRange');
+  const spR = document.getElementById('mvSpacingRange');
+  if (!fontSel || !sizeR || !lhR || !spR) return;
+  const fontKey = fontSel.value;
+  const size = parseInt(sizeR.value, 10);
+  const lhTenth = parseInt(lhR.value, 10); // 10-25 → 1.0-2.5
+  const spacing = parseInt(spR.value, 10);
+  const root = document.documentElement.style;
+  root.setProperty('--mv-font', MV_FONT_STACKS[fontKey] || MV_FONT_STACKS.dashitseden);
+  root.setProperty('--mv-size', size + 'px');
+  root.setProperty('--mv-lh', (lhTenth / 10).toFixed(1));
+  root.setProperty('--mv-spacing', spacing + 'px');
+  const sizeVal = document.getElementById('mvSizeVal');
+  const lhVal = document.getElementById('mvLhVal');
+  const spVal = document.getElementById('mvSpacingVal');
+  if (sizeVal) sizeVal.textContent = size + 'px';
+  if (lhVal) lhVal.textContent = (lhTenth / 10).toFixed(1);
+  if (spVal) spVal.textContent = spacing + 'px';
+  if (save !== false){
+    try {
+      localStorage.setItem(MV_STYLE_KEY, JSON.stringify({ font: fontKey, size, lh: lhTenth, spacing }));
+    } catch(e){ /* localStorage ашиглах боломжгүй бол алгасна */ }
+  }
+}
+function resetMongolStyleSettings(){
+  loadMongolStyleSettings(MV_DEFAULTS);
+  applyMongolStyleSettings(true);
+}
+function loadMongolStyleSettings(overrideSettings){
+  let s = overrideSettings;
+  if (!s){
+    try {
+      const raw = localStorage.getItem(MV_STYLE_KEY);
+      s = raw ? JSON.parse(raw) : MV_DEFAULTS;
+    } catch(e){ s = MV_DEFAULTS; }
+  }
+  const fontSel = document.getElementById('mvFontSelect');
+  const sizeR = document.getElementById('mvSizeRange');
+  const lhR = document.getElementById('mvLhRange');
+  const spR = document.getElementById('mvSpacingRange');
+  if (fontSel) fontSel.value = s.font || MV_DEFAULTS.font;
+  if (sizeR) sizeR.value = s.size || MV_DEFAULTS.size;
+  if (lhR) lhR.value = s.lh || MV_DEFAULTS.lh;
+  if (spR) spR.value = (typeof s.spacing === 'number') ? s.spacing : MV_DEFAULTS.spacing;
+  applyMongolStyleSettings(false);
 }
 
 function convertText(){
