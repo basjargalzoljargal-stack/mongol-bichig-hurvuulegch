@@ -1402,10 +1402,18 @@ function copyMongolRich(boxId, msgId){
     document.body.removeChild(tmp);
     if (!ok) throw new Error('execCommand(copy) амжилтгүй');
   }
-  tryModernClipboard().then(function(){ finish(true); }).catch(function(){
-    try { fallbackExecCommand(); finish(true); }
-    catch(e2){ finish(false, e2); }
-  });
+  // АНХААР: document.execCommand('copy') ЗААВАЛ синхрон (хэрэглэгчийн клик дотор шууд)
+  // дуудагдах ёстой — эс тэгвэл браузер "user gesture алга" гэж татгалзана. Иймд ЭХЛЭЭД
+  // энэ найдвартай синхрон аргыг турших, зөвхөн энэ бүтэлгүйтвэл орчин үеийн async
+  // Clipboard API руу шилжинэ (тэр нь заримдаа permission/context-оос шалтгаалж
+  // ХЭЗЭЭ Ч resolve/reject хийхгүй "царцаж" болдгийг тогтоосон тул түүнийг ПРИМАР
+  // болгож ашиглавал товч дарахад юу ч болохгүй "царцаж" магадгүй байсан).
+  try {
+    fallbackExecCommand();
+    finish(true);
+  } catch(e1){
+    tryModernClipboard().then(function(){ finish(true); }).catch(function(e2){ finish(false, e2); });
+  }
 }
 
 let lastConverted = '';
