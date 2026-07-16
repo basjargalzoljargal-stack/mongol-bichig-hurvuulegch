@@ -151,6 +151,14 @@
     letter-spacing:0;
     margin:0 1px;
   }
+  /* Толь бичигт шууд олдоогүй (үсэг тус бүрээр хувиргасан, итгэлтэй бус) үгсийг
+     тодруулна — ЗӨВХӨН шуурхай урьдчилан харах хэсэгт (quickMongolOutput), Word татах/
+     хэвлэх/хуулах руу нөлөөлөхгүй. Дэлгэрэнгүйг cyrillicToMongolAnnotated()-оос үзнэ үү. */
+  .mongol-vertical .mv-fallback{
+    background:rgba(217,119,6,0.18);
+    border-radius:2px;
+    cursor:help;
+  }
   .placeholder{color:var(--muted);font-size:13px;align-self:center;}
   /* Зөвхөн бичвэр хэвлэх горим: #printOnlyArea нь дэлгэцэнд ХЭЗЭЭ Ч харагдахгүй
      (эндхийн урьдчилан харах хэсэгт нөлөөлөхгүй), харин window.print() дуудагдахад
@@ -1233,6 +1241,34 @@ function cyrillicToMongol(text){
   return text.split(/(\s+)/).map(tok => /^\s*$/.test(tok) ? tok : convertToken(tok)).join('');
 }
 
+// Хэрэглэгч kimo/MonScript-той харьцуулж чанарын талаар анхаарал татсаны дараа нэмэв:
+// Одоогийн хөрвүүлэгч ЗӨВХӨН эрхийн (генитив) залгаврыг тайлдаг, бусад тийн ялгал/нөхцөл
+// (заах, гарах, үйл үгийн төгсгөл г.м.)-ыг ХАРААХАН тайлдаггүй тул толинд шууд байхгүй
+// хувирсан үг бүр ХЭТ ЕНГИЙН тэмдэгт-тэмдэгтийн (charByChar) хувиргалт руу унаж, БУРУУ
+// гарах эрсдэлтэй. Үүнийг ноцтой асуудал гэж үзээд "чимээгүй буруу" байснаас илүү аюулгүй
+// зохицуулалт болгож, тольд ШУУД олдоогүй (charByChar-аар хувиргасан) үг бүрийг дэлгэц дээр
+// ТОДРУУЛЖ (шаргал дэвсгэртэй) харуулна — ингэснээр хэрэглэгч яг аль үгсийг гараар
+// шалгах шаардлагатайг НЭГ харцаар олж харна. Энэ тэмдэглэгээ ЗӨВХӨН дэлгэцийн шуурхай
+// урьдчилан харах хэсэгт (quickMongolOutput) хэрэглэгдэнэ — Word файл татах, хэвлэх,
+// "Хуулах (фонттой)" зэрэг ЭЦСИЙН гаралтад огт нөлөөлөхгүй (тэдгээр нь энгийн
+// cyrillicToMongol()-ыг л ашигласаар байна, доорх функцийг ашигладаггүй тул цэвэр хэвээр).
+function cyrillicToMongolAnnotated(text){
+  dictHits = 0; dictMisses = 0;
+  const parts = text.split(/(\s+)/);
+  let html = '', plain = '';
+  for (const tok of parts){
+    if (/^\s*$/.test(tok)){ html += escapeHtml(tok); plain += tok; continue; }
+    const missesBefore = dictMisses;
+    const converted = convertToken(tok);
+    plain += converted;
+    const inner = renderMongolHtml(converted);
+    html += (dictMisses > missesBefore)
+      ? ('<span class="mv-fallback" title="Толь бичигт шууд олдоогүй тул үсэг тус бүрээр хөрвүүлсэн — гараар шалгаж, шаардлагатай бол засварлана уу">' + inner + '</span>')
+      : inner;
+  }
+  return { html, plain };
+}
+
 // ========================================================================
 // УРВУУ ХӨРВҮҮЛЭЛТ: Монгол бичиг → Кирилл
 // ========================================================================
@@ -1566,7 +1602,8 @@ function loadMongolStyleSettings(overrideSettings){
 
 function convertText(){
   const src = document.getElementById('inputText').value;
-  lastConverted = cyrillicToMongol(src);
+  const annotated = cyrillicToMongolAnnotated(src);
+  lastConverted = annotated.plain;
   const box = document.getElementById('previewBox');
   const quickBox = document.getElementById('quickMongolOutput');
   const stat = document.getElementById('dictStat');
@@ -1579,11 +1616,13 @@ function convertText(){
   renderPreview();
   // Дээд хэсгийн шуурхай хөрвүүлэгчийн баруун талын хайрцагт (урьдчилан харах/бланкны
   // давхарлалгүй, зөвхөн цэвэр текст) мөн адил үр дүнг харуулна — kimo-ийн шиг шуурхай
-  // хос хайрцагтай харагдацыг хангахын тулд.
-  if (quickBox) quickBox.innerHTML = '<div class="mongol-vertical" style="margin:0 auto;">' + renderMongolHtml(lastConverted) + '</div>';
+  // хос хайрцагтай харагдацыг хангахын тулд. Толинд шууд олдоогүй (charByChar-аар
+  // хувиргасан, ИТГЭЛТЭЙ БУС) үгсийг cyrillicToMongolAnnotated()-ийн ачаар шаргал
+  // дэвсгэртэй (.mv-fallback) тодотгож харуулна.
+  if (quickBox) quickBox.innerHTML = '<div class="mongol-vertical" style="margin:0 auto;">' + annotated.html + '</div>';
   if (stat){
     const total = dictHits + dictMisses;
-    stat.textContent = total ? ('Толь бичгээс шууд олдсон: ' + dictHits + ' / ' + total + ' үг') : '';
+    stat.textContent = total ? ('Толь бичгээс шууд олдсон: ' + dictHits + ' / ' + total + ' үг' + (dictMisses ? ' — 🟧 шаргал дэвсгэртэй үгсийг гараар шалгана уу' : '')) : '';
   }
 }
 
