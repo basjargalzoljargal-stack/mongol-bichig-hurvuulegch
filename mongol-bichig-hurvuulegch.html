@@ -100,7 +100,18 @@
      "Bolorsoft free font. This font may be downloaded, distributed and used free of charge
      for both personal and commercial use." гэж тодорхой бичсэн тул арилжааны хэрэглээнд ч
      зөвшөөрөгдсөн — иймд веб дээр шууд суулгамал (embed) болгов (эрх зүйн эрсдэлгүй).
-     Лиценз: https://fonts.bolorsoft.com/license */
+     Лиценз: https://fonts.bolorsoft.com/license
+     АНХААР (2 нэрээр бүртгэсэн шалтгаан): фонтын файлын дотоод metadata-д "Dashitseden"
+     (i үсэгтэй) гэж бичигдсэн байдаг ХАРИН kimo.mngl.net өөрөө CSS дээрээ "Dashtseden"
+     (i үсэггүй) гэж дуудаж байгааг тогтоосон. Хэрэглэгчийн Windows компьютер дээр аль
+     нэг хувилбараар (жишээ нь өөр эх сурвалжаас) суулгасан байж болох тул хуулж
+     Word-т тавихад аль ч нэрээр олдвол зөв фонтоор харагдахын тулд ХОЁУЛАНГ НЬ доор
+     @font-face-ээр мөн CSS жагсаалтад бүртгэв (2 нэр — 1 embed хийсэн файл). */
+  @font-face{
+    font-family:'Classical Mongolian Dashtseden';
+    src:url('cmdashitseden.ttf') format('truetype');
+    font-display:swap;
+  }
   @font-face{
     font-family:'Classical Mongolian Dashitseden';
     src:url('cmdashitseden.ttf') format('truetype');
@@ -116,7 +127,7 @@
        СУУЛГАСАН бол автоматаар яг kimo шиг харагдана; суулгаагүй бол Mongolian Baiti руу
        буцна (өмнөх адил). Хэрэв БҮХ зочинд (фонт суулгаагүй ч) баталгаатай ижил харагдуулах
        шаардлагатай бол зөвшөөрөлтэй (SIL OFL) "Noto Sans Mongolian" веб-фонтоор солих хэрэгтэй.*/
-    font-family:var(--mv-font, 'Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif);
+    font-family:var(--mv-font, 'Classical Mongolian Dashtseden','Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif);
     font-size:var(--mv-size, 30px);
     letter-spacing:var(--mv-spacing, 2px);
     line-height:var(--mv-lh, 1.7);
@@ -250,7 +261,7 @@
     <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;">Энд нэмсэн үг ШУУД (redeploy хийхгүйгээр) бүх хэрэглэгчийн хөрвүүлэлтэд ашиглагдана (Firestore-д хадгалагдана). "Санал болгох" товч зөвхөн энгийн тэмдэгт-тэмдэгтийн хувиргалт өгдөг тул зөв бичгийн дүрмээр гараар шалгаж засаарай.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
       <input type="text" id="newDictCyr" placeholder="Кирилл үг" style="flex:1;min-width:140px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;">
-      <input type="text" id="newDictMon" placeholder="Монгол бичиг (Unicode)" style="flex:2;min-width:220px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:'Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif;">
+      <input type="text" id="newDictMon" placeholder="Монгол бичиг (Unicode)" style="flex:2;min-width:220px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:'Classical Mongolian Dashtseden','Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif;">
       <button id="suggestDictBtn" class="secondary" style="padding:9px 12px;font-size:12.5px;">Санал болгох</button>
       <button id="addDictBtn" style="padding:9px 16px;">+ Толинд нэмэх</button>
     </div>
@@ -781,7 +792,7 @@ function loadCustomDictList(){
       const d = doc.data();
       html += '<tr style="border-bottom:1px solid var(--border);">';
       html += '<td style="padding:6px 4px;">' + (d.cyrillic || '') + '</td>';
-      html += '<td style="padding:6px 4px;font-family:\'Classical Mongolian Dashitseden\',\'Mongolian Baiti\',sans-serif;font-size:15px;">' + (d.mongol || '') + '</td>';
+      html += '<td style="padding:6px 4px;font-family:\'Classical Mongolian Dashtseden\',\'Classical Mongolian Dashitseden\',\'Mongolian Baiti\',sans-serif;font-size:15px;">' + (d.mongol || '') + '</td>';
       html += '<td style="padding:6px 4px;white-space:nowrap;"><button class="secondary" style="padding:5px 10px;font-size:12px;color:#b3261e;" onclick="deleteDictWord(\'' + doc.id + '\',\'' + (d.cyrillic || '').replace(/'/g, "\\'") + '\')">Устгах</button></td>';
       html += '</tr>';
     });
@@ -1363,7 +1374,7 @@ function toggleConverterDirection(){
 // document.documentElement дээр тохируулахад бүх газарт шууд нөлөөлнө. Сонголтыг
 // localStorage-т хадгалдаг тул хуудас дахин ачаалахад хэрэглэгчийн сонголт хадгалагдана.
 const MV_FONT_STACKS = {
-  dashitseden: "'Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif",
+  dashitseden: "'Classical Mongolian Dashtseden','Classical Mongolian Dashitseden','Mongolian Baiti',sans-serif",
   baiti: "'Mongolian Baiti',sans-serif"
 };
 const MV_STYLE_KEY = 'mongolVerticalStyleSettings';
