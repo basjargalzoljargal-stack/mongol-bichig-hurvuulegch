@@ -1678,13 +1678,16 @@ function printNoteOnly(){
   const colWidthMm = 16;
   const colHeightMm = base.height - marginMm * 2;
   let colsHtml = '';
-  const rawCols = [];
-  if (copyRaw) rawCols.push({ label: 'Хувь: ' + copyRaw, name: '' });
-  if (preparedRaw) rawCols.push({ label: 'Боловсруулсан:', name: preparedRaw });
-  if (checkedRaw) rawCols.push({ label: 'Хянасан:', name: checkedRaw });
-  rawCols.forEach(function(col, i){
-    let html = mongolLine(col.label);
-    if (col.name) html += '<br><br><br>' + mongolLine(col.name);
+  // ЧУХАЛ: тэгш босоо бичвэрийн (writing-mode: vertical) баганан дотор <br> ашиглавал
+  // тухайн <br> бүр ШИНЭ БАГАНА эхлүүлдэг (мөр биш!) — тиймээс "нэр:<br><br><br>нэр"
+  // хэлбэрээр нэг л 16мм-ийн баганад хийвэл нэрийн текст 16мм-ээс гадагш шинэ баганад
+  // гарч, overflow:hidden-ээр таслагдаж НУУГДДАГ байсан (нэр "алга болох" алдааны шалтгаан).
+  // Засвар: шошго (label) болон нэрийг тус тусдаа, ХАРИЛЦАН ЗЭРЭГЦЭЭ 2 тусдаа баганад байрлуулна.
+  const entries = [];
+  if (copyRaw) entries.push(mongolLine('Хувь: ' + copyRaw));
+  if (preparedRaw){ entries.push(mongolLine('Боловсруулсан:')); entries.push(mongolLine(preparedRaw)); }
+  if (checkedRaw){ entries.push(mongolLine('Хянасан:')); entries.push(mongolLine(checkedRaw)); }
+  entries.forEach(function(html, i){
     colsHtml += '<div class="mongol-vertical" style="position:absolute;left:' + (marginMm + i * colWidthMm) +
       'mm;bottom:' + marginMm + 'mm;width:' + colWidthMm + 'mm;max-height:' + colHeightMm +
       'mm;font-size:4.5mm;letter-spacing:0.5mm;line-height:1.4;overflow:hidden;">' + html + '</div>';
