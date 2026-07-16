@@ -1174,10 +1174,50 @@ function convertToken(tok){
     converted = DICT[lower];
     dictHits++;
   } else {
-    converted = charByChar(bare);
-    dictMisses++;
+    // "газрын" (газар+ын), "шүүхийн" (шүүх+ийн) гэх мэт ҮГ+ГЕНИТИВ ЗАЛГАВАР зураасгүй
+    // НИЙЛЖ бичигдсэн (эрхийн тийн ялгал маш түгээмэл тул) тохиолдолд бүтэн үг толь
+    // бичигт олдоогүй ч, толинд байгаа ЯЗГУУРТАЙ нь давхацвал зөв генитив хэлбэрээр
+    // (MVS+ᠤᠨ/ᠡᠶᠢᠨ) хөрвүүлнэ — эс тэгвээс ХЭТ ЕНГИЙН тэмдэгт-тэмдэгтийн хувиргалт
+    // (charByChar) уруу унаж буруу гарч байсан (жиш: "газрын", "шүүхийн" зэрэг).
+    const fused = tryFusedGenitive(lower);
+    if (fused){
+      converted = fused;
+      dictHits++;
+    } else {
+      converted = charByChar(bare);
+      dictMisses++;
+    }
   }
   return lead + converted + trail;
+}
+
+// bare (жижиг үсэгт) толь бичигт шууд олдоогүй тохиолдолд, түүнийг ЯЗГУУР+ГЕНИТИВ
+// (зураасгүй нийлж бичигдсэн) гэж үзэж, сүүлийн хэсгээс нь боломжит эрхийн залгаврыг
+// (урт хэлбэрээс нь эхлээд) тайлж, үлдэгдэл язгуурыг толь бичигтэй тулгана. Зарим
+// язгуур нь залгавар залгахдаа сүүлийн эгшгээ уналддаг тул (газар→газрЫН, "а" уналдсан)
+// тайлсны дараа шууд олдохгүй бол сүүлийн 2 гийгүүлэгчийн хооронд боломжит эгшгүүдийг
+// (а,о,у,э,ө,ү) нэг нэгээр оруулж толинд дахин шалгана. Аль нэг нь толинд олдвол ЛАВ
+// зөв гэж үзэж генитив хэлбэрт оруулна; олдохгүй бол null буцааж хэвийн журмаар (charByChar)
+// үргэлжлүүлнэ (буруу таамаглал хийхээс сэргийлнэ).
+const FUSED_GENITIVE_SUFFIXES = ['гийн', 'гын', 'ний', 'ийн', 'ын'];
+const MONGOL_SHORT_VOWELS = ['а', 'о', 'у', 'э', 'ө', 'ү'];
+function tryFusedGenitive(lowerWord){
+  if (typeof DICT === 'undefined') return null;
+  for (const suf of FUSED_GENITIVE_SUFFIXES){
+    if (lowerWord.length <= suf.length || !lowerWord.endsWith(suf)) continue;
+    const stem = lowerWord.slice(0, -suf.length);
+    if (stem.length < 2) continue;
+    if (DICT[stem]) return DICT[stem] + GENITIVE_SUFFIX[wordGender(stem)];
+    if (stem.length >= 2){
+      const stemHead = stem.slice(0, -1);
+      const stemTail = stem.slice(-1);
+      for (const v of MONGOL_SHORT_VOWELS){
+        const candidate = stemHead + v + stemTail;
+        if (DICT[candidate]) return DICT[candidate] + GENITIVE_SUFFIX[wordGender(candidate)];
+      }
+    }
+  }
+  return null;
 }
 
 function cyrillicToMongol(text){
