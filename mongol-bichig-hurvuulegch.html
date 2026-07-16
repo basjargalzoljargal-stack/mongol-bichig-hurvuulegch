@@ -233,6 +233,20 @@
     <div id="usersListBox" style="font-size:13.5px;">
       <div style="color:var(--muted);">Ачааллаж байна...</div>
     </div>
+
+    <hr style="margin:22px 0;border:none;border-top:1px solid var(--border);">
+    <h2 style="font-size:15px;margin:0 0 4px;color:var(--blue-dark);">Толь бичигт шинэ үг нэмэх</h2>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;">Энд нэмсэн үг ШУУД (redeploy хийхгүйгээр) бүх хэрэглэгчийн хөрвүүлэлтэд ашиглагдана (Firestore-д хадгалагдана). "Санал болгох" товч зөвхөн энгийн тэмдэгт-тэмдэгтийн хувиргалт өгдөг тул зөв бичгийн дүрмээр гараар шалгаж засаарай.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <input type="text" id="newDictCyr" placeholder="Кирилл үг" style="flex:1;min-width:140px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;">
+      <input type="text" id="newDictMon" placeholder="Монгол бичиг (Unicode)" style="flex:2;min-width:220px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:'Classical Mongolian Dashtseden','Mongolian Baiti',sans-serif;">
+      <button id="suggestDictBtn" class="secondary" style="padding:9px 12px;font-size:12.5px;">Санал болгох</button>
+      <button id="addDictBtn" style="padding:9px 16px;">+ Толинд нэмэх</button>
+    </div>
+    <div id="dictAdminMsg" style="font-size:13px;margin-bottom:10px;display:none;"></div>
+    <div id="customDictListBox" style="font-size:13.5px;max-height:320px;overflow-y:auto;">
+      <div style="color:var(--muted);">Ачааллаж байна...</div>
+    </div>
   </div>
 
   <div style="background:#fff3cd;border:2px solid #e6a700;border-radius:8px;padding:8px 14px;margin-bottom:12px;margin-top:10px;font-size:13px;font-weight:700;color:#7a5200;">
@@ -241,28 +255,57 @@
   <p class="subtitle">Кирилл бичгээр текст оруулаад, байгууллагын бланк дээр байрлуулсан бэлэн Word (.doc) файл татаж авна. Хөрвүүлэлт нь ~23,000 үгтэй толь бичигт (toli.query.mn) суурилсан тул түүхэн зөв бичлэгтэй илүү нийцтэй.</p>
 
   <div class="grid">
-    <div class="card">
-      <h2>1. Кирилл текст</h2>
-      <textarea id="inputText" placeholder="Жишээ: Монгол Улсын Засгийн газар...">Монгол Улс</textarea>
-      <div class="row">
-        <button onclick="checkSpelling()">① Алдаа шалгах</button>
-        <button onclick="convertText()">② Хөрвүүлэх</button>
-        <button class="secondary" onclick="clearAll()">Цэвэрлэх</button>
+    <div class="card full">
+      <h2>1. Хөрвүүлэх</h2>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;">
+        <div id="converterLeftLabel" style="font-weight:700;font-size:14px;min-width:70px;">Кирилл</div>
+        <button type="button" class="secondary" onclick="toggleConverterDirection()" title="Чиглэл сэлгэх" style="padding:8px 12px;font-size:17px;line-height:1;">⇄</button>
+        <div id="converterRightLabel" style="font-weight:700;font-size:14px;min-width:110px;">Монгол бичиг</div>
       </div>
-      <div id="spellBox" class="spell-box" style="display:none;"></div>
-      <div id="spellStat" style="margin-top:6px;font-size:12.5px;color:var(--muted);"></div>
-      <div id="dictStat" style="margin-top:4px;font-size:12.5px;color:var(--muted);"></div>
-    </div>
 
-    <div class="card">
-      <h2>2. Монгол бичгийн урьдчилсан харагдац</h2>
-      <div class="preview-box" id="previewBox">
-        <span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>
+      <div id="c2mPanel" class="grid">
+        <div>
+          <textarea id="inputText" placeholder="Жишээ: Монгол Улсын Засгийн газар...">Монгол Улс</textarea>
+          <div class="row">
+            <button onclick="checkSpelling()">① Алдаа шалгах</button>
+            <button onclick="convertText()">② Хөрвүүлэх</button>
+            <button class="secondary" onclick="clearAll()">Цэвэрлэх</button>
+          </div>
+          <div id="spellBox" class="spell-box" style="display:none;"></div>
+          <div id="spellStat" style="margin-top:6px;font-size:12.5px;color:var(--muted);"></div>
+          <div id="dictStat" style="margin-top:4px;font-size:12.5px;color:var(--muted);"></div>
+        </div>
+        <div>
+          <div class="preview-box" id="quickMongolOutput">
+            <span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="m2cPanel" class="grid" style="display:none;">
+        <div>
+          <textarea id="reverseInput" placeholder="ᠮᠣᠩᠭᠣᠯ ᠤᠯᠤᠰ" style="min-height:160px;"></textarea>
+          <div class="row" style="margin-top:8px;">
+            <button onclick="convertReverseText()">Хөрвүүлэх →</button>
+            <button class="secondary" onclick="clearReverse()">Цэвэрлэх</button>
+          </div>
+          <div id="reverseStat" style="margin-top:4px;font-size:12.5px;color:var(--muted);"></div>
+        </div>
+        <div>
+          <textarea id="reverseOutput" readonly style="min-height:160px;"></textarea>
+          <div class="row" style="margin-top:8px;">
+            <button class="secondary" onclick="copyReverseOutput()">📋 Хуулах</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="reverseNote" class="note" style="display:none;">
+        ⚠️ Анхаар: Уламжлалт монгол бичиг зарим Кирилл үсгийг (ж/з, ц/ч, ш/щ, мөн и/й/ъ/ы/ь) ЯЛГАЖ БИЧДЭГГҮЙ тул толь бичигт ОЛДООГҮЙ үгсийг тэмдэгт-тэмдэгтээр урвуулахад эдгээр хос үсгийн зөвхөн нэг хувилбар (жиш: ц, ж, и) сонгогдоно. 100% үнэн зөв урвуу хөрвүүлэлт ЗӨВХӨН толь бичигт байгаа (танигдсан) үгсэд баталгаатай.
       </div>
     </div>
 
     <div class="card full">
-      <h2>3. Баримт бичгийн тохиргоо</h2>
+      <h2>2. Албан бланк сонгож, урьдчилан харах</h2>
       <!-- Хэрэглэгчийн шаардсанаар: албан бланкны лого/толгой хэсгийн зураг оруулах боломжийг
            хассан — жинхэнэ ХЭРЭГЛЭЭНД баримт бичгийг цаанаасаа лого хэвлэгдсэн (хэвлэмэл)
            хуудсан дээр шууд хэвлэдэг тул программ өөрөө лого зурж оруулах шаардлагагүй. -->
@@ -284,8 +327,14 @@
             </select>
           </div>
         </div>
+      </div>
 
-        <div class="field-grid" style="margin-top:10px;">
+      <div class="preview-box" id="previewBox">
+        <span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>
+      </div>
+
+      <div class="mns-fields" style="margin-top:14px;">
+        <div class="field-grid">
           <div>
             <label>Зах, дээд (мм)</label>
             <input type="text" id="marginTop" value="25" oninput="renderPreview()">
@@ -361,8 +410,7 @@
     </div>
 
     <div class="card full">
-      <h2>4. Хянасан / Боловсруулсан / Хувь тэмдэглэл (тусад нь хэвлэх)</h2>
-      <!-- Дугаарлалт хэвээр (4) — бүрдлүүдийн дараалал хадгалагдана -->
+      <h2>3. Хянасан / Боловсруулсан / Хувь тэмдэглэл (тусад нь хэвлэх)</h2>
 
       <p class="subtitle" style="margin:0 0 10px;">MNS 5140-2:2021: энэ тэмдэглэлийг баримт бичгийн <b>сүүлийн хуудасны арын зүүн доод хэсэгт, зүүн захаас 15мм, доод захаас 15мм</b> зайтай байрлуулна. Үндсэн бичвэрийн урсгал дотор яг энэ буланд нарийвчлан бэхлэх нь техникийн хувьд тогтворгүй тул үүнийг ТУСДАА жижиг файл болгож, та үндсэн бичгээ хэвлүүлсний дараа ар талд нь дахин хэвлэж болно.</p>
       <div class="mns-fields">
@@ -398,31 +446,6 @@
       </div>
     </div>
 
-    <div class="card full">
-      <h2>5. Монгол бичиг → Кирилл (урвуу хөрвүүлэлт)</h2>
-      <p class="subtitle" style="margin:0 0 10px;">Монгол бичгийн текстээ (Юникод, ᠮᠣᠩᠭᠣᠯ ᠪᠢᠴᠢᠭ) доор буулгаад (paste хийгээд) "Хөрвүүлэх" дарна уу — Кирилл рүү хөрвүүлнэ.</p>
-      <div class="grid">
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Монгол бичиг (энд буулгана уу)</label>
-          <textarea id="reverseInput" placeholder="ᠮᠣᠩᠭᠣᠯ ᠤᠯᠤᠰ" style="min-height:160px;"></textarea>
-          <div class="row" style="margin-top:8px;">
-            <button onclick="convertReverseText()">Хөрвүүлэх →</button>
-            <button class="secondary" onclick="clearReverse()">Цэвэрлэх</button>
-          </div>
-        </div>
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Кирилл (үр дүн)</label>
-          <textarea id="reverseOutput" readonly style="min-height:160px;"></textarea>
-          <div class="row" style="margin-top:8px;">
-            <button class="secondary" onclick="copyReverseOutput()">📋 Хуулах</button>
-          </div>
-          <div id="reverseStat" style="margin-top:4px;font-size:12.5px;color:var(--muted);"></div>
-        </div>
-      </div>
-      <div class="note">
-        ⚠️ Анхаар: Уламжлалт монгол бичиг зарим Кирилл үсгийг (ж/з, ц/ч, ш/щ, мөн и/й/ъ/ы/ь) ЯЛГАЖ БИЧДЭГГҮЙ тул толь бичигт ОЛДООГҮЙ үгсийг тэмдэгт-тэмдэгтээр урвуулахад эдгээр хос үсгийн зөвхөн нэг хувилбар (жиш: ц, ж, и) сонгогдоно. 100% үнэн зөв урвуу хөрвүүлэлт ЗӨВХӨН толь бичигт байгаа (танигдсан) үгсэд баталгаатай.
-      </div>
-    </div>
   </div>
 </div>
 </div><!-- /#appContent -->
@@ -480,6 +503,7 @@ auth.onAuthStateChanged(function(user){
     app.style.display = 'block';
     if (emailSpan) emailSpan.textContent = user.email;
     if (adminBtn) adminBtn.style.display = 'inline-block';
+    loadCustomDict(); // Firestore-д админ нэмсэн шинэ үгсийг DICT/REVERSE_DICT-д нэгтгэнэ
     return;
   }
 
@@ -491,6 +515,7 @@ auth.onAuthStateChanged(function(user){
       app.style.display = 'block';
       if (emailSpan) emailSpan.textContent = user.email;
       if (adminBtn) adminBtn.style.display = 'none';
+      loadCustomDict(); // Бүх хэрэглэгчид админы нэмсэн шинэ үгс шууд нэвтэрнэ
     } else {
       auth.signOut().then(function(){
         if (loadEl) loadEl.style.display = 'none';
@@ -639,6 +664,112 @@ function deleteUserRecord(uid, email){
     .catch(function(err){ showAdminMsg('Алдаа гарлаа: ' + err.message, true); });
 }
 
+// ===== Толь бичигт админаас шинэ үг нэмэх (Firestore "customDict" коллекц) =====
+// АНХААР: энэ функцууд DICT/REVERSE_DICT глобал хувьсагчийг ашигладаг тул тэдгээрийг
+// тодорхойлдог доод хэсгийн код (charByChar, REVERSE_DICT гэх мэт) АЛЬ ХЭДИЙН ажилласан
+// байх ёстой — гэхдээ JS-ийн функц зарлалт (declaration) бүхэлдээ script ажиллахаас өмнө
+// hoisted болдог тул код дараалал асуудалгүй; зөвхөн ЭНЭ функцуудыг ДУУДАХ мөч
+// (auth.onAuthStateChanged callback, товч дарах г.м — үргэлж script бүрэн ачаалсны
+// дараа тохиолддог) чухал.
+function showDictMsg(text, isError){
+  const el = document.getElementById('dictAdminMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isError ? '#b3261e' : '#0f7a3d';
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 6000);
+}
+
+// Firestore-с бүх нэмэлт үгсийг татаж, идэвхтэй хэрэглэж буй DICT/REVERSE_DICT-д шууд
+// нэгтгэнэ (redeploy хийх шаардлагагүйгээр, бүх хэрэглэгчид НЭГ ГАЗРААС шинэчлэгдэнэ).
+function loadCustomDict(){
+  return db.collection('customDict').get().then(function(snap){
+    snap.forEach(function(doc){
+      const d = doc.data();
+      if (d.cyrillic && d.mongol){
+        DICT[d.cyrillic] = d.mongol;
+        if (!(d.mongol in REVERSE_DICT)) REVERSE_DICT[d.mongol] = d.cyrillic;
+      }
+    });
+  }).catch(function(err){
+    console.error('customDict ачаалахад алдаа гарлаа:', err);
+  });
+}
+
+// Кирилл үгийг оруулаад дарахад тэмдэгт-тэмдэгтийн (charByChar) энгийн хувиргалтыг эхний
+// саналаар Монгол бичгийн талбарт бөглөнө — админ үүнийг зөв бичгийн дүрмээр гараар
+// засварлаад хадгална (100% автомат биш, зөвхөн эхлэл цэг).
+function suggestDictMongol(){
+  const cyrEl = document.getElementById('newDictCyr');
+  const monEl = document.getElementById('newDictMon');
+  const cyr = (cyrEl.value || '').trim().toLowerCase();
+  if (!cyr) return;
+  monEl.value = charByChar(cyr);
+}
+
+function addDictWord(){
+  const cyrEl = document.getElementById('newDictCyr');
+  const monEl = document.getElementById('newDictMon');
+  const cyr = (cyrEl.value || '').trim().toLowerCase();
+  const mon = (monEl.value || '').trim();
+  if (!cyr || !mon){
+    showDictMsg('Кирилл болон Монгол бичиг хоёуланг нь бөглөнө үү.', true);
+    return;
+  }
+  db.collection('customDict').add({
+    cyrillic: cyr,
+    mongol: mon,
+    addedBy: (auth.currentUser && auth.currentUser.email) || '',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    DICT[cyr] = mon;
+    if (!(mon in REVERSE_DICT)) REVERSE_DICT[mon] = cyr;
+    cyrEl.value = '';
+    monEl.value = '';
+    showDictMsg('Толинд нэмэгдлээ: ' + cyr + ' → ' + mon, false);
+    loadCustomDictList();
+  }).catch(function(err){
+    showDictMsg('Алдаа гарлаа: ' + err.message, true);
+  });
+}
+
+function loadCustomDictList(){
+  const box = document.getElementById('customDictListBox');
+  if (!box) return;
+  box.innerHTML = '<div style="color:var(--muted);">Ачааллаж байна...</div>';
+  db.collection('customDict').orderBy('createdAt', 'desc').get().then(function(snap){
+    if (snap.empty){
+      box.innerHTML = '<div style="color:var(--muted);">Нэмэлт үг алга байна. Дээрх талбараар нэмнэ үү.</div>';
+      return;
+    }
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:13.5px;">';
+    html += '<tr style="text-align:left;border-bottom:1px solid var(--border);"><th style="padding:6px 4px;">Кирилл</th><th style="padding:6px 4px;">Монгол бичиг</th><th style="padding:6px 4px;">Үйлдэл</th></tr>';
+    snap.forEach(function(doc){
+      const d = doc.data();
+      html += '<tr style="border-bottom:1px solid var(--border);">';
+      html += '<td style="padding:6px 4px;">' + (d.cyrillic || '') + '</td>';
+      html += '<td style="padding:6px 4px;font-family:\'Classical Mongolian Dashtseden\',\'Mongolian Baiti\',sans-serif;font-size:15px;">' + (d.mongol || '') + '</td>';
+      html += '<td style="padding:6px 4px;white-space:nowrap;"><button class="secondary" style="padding:5px 10px;font-size:12px;color:#b3261e;" onclick="deleteDictWord(\'' + doc.id + '\',\'' + (d.cyrillic || '').replace(/'/g, "\\'") + '\')">Устгах</button></td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+    box.innerHTML = html;
+  }).catch(function(err){
+    box.innerHTML = '<div style="color:#b3261e;">Ачаалахад алдаа гарлаа: ' + err.message + '</div>';
+  });
+}
+
+function deleteDictWord(docId, cyr){
+  if (!confirm((cyr || 'энэ үг') + '-ийг тольноос устгах уу?')) return;
+  db.collection('customDict').doc(docId).delete()
+    .then(function(){
+      if (cyr) delete DICT[cyr];
+      showDictMsg('Устгагдлаа: ' + cyr, false);
+      loadCustomDictList();
+    })
+    .catch(function(err){ showDictMsg('Алдаа гарлаа: ' + err.message, true); });
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -653,8 +784,13 @@ document.addEventListener('DOMContentLoaded', function(){
     const panel = document.getElementById('adminPanel');
     const isHidden = panel.style.display === 'none' || !panel.style.display;
     panel.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) loadUsersList();
+    if (isHidden){ loadUsersList(); loadCustomDictList(); }
   });
+  const suggestDictBtn = document.getElementById('suggestDictBtn');
+  const addDictBtn = document.getElementById('addDictBtn');
+  if (suggestDictBtn) suggestDictBtn.addEventListener('click', suggestDictMongol);
+  if (addDictBtn) addDictBtn.addEventListener('click', addDictWord);
+  if (typeof applyConverterDirectionUI === 'function') applyConverterDirectionUI();
 });
 
 // ===== Зөв бичгийн алдаа шалгагч =====
@@ -1161,17 +1297,48 @@ function copyReverseOutput(){
 
 let lastConverted = '';
 
+// ===== Хөрвүүлэх чиглэл сэлгэх (kimo/MonScript шиг ⇄ товч) =====
+// 'c2m' = Кирилл → Монгол бичиг (үндсэн), 'm2c' = Монгол бичиг → Кирилл (урвуу).
+// Доорх 2 самбар (c2mPanel / m2cPanel) НЭГ картын дотор давхцаж байрладаг бөгөөд зөвхөн
+// идэвхтэй чиглэлийнх нь самбарыг харуулж, нөгөөг нь нуудаг — доорх бусад бүх функц
+// (convertText, downloadDocx, printLetterheadOnly г.м) ямар ч өөрчлөлтгүй, яг өмнөх шигээ
+// #inputText/#previewBox дээр тулгуурлан ажиллана (зөвхөн ХАРАГДАХ байдал өөрчлөгдөнө).
+let converterDirection = 'c2m';
+function applyConverterDirectionUI(){
+  const c2mPanel = document.getElementById('c2mPanel');
+  const m2cPanel = document.getElementById('m2cPanel');
+  const leftLabel = document.getElementById('converterLeftLabel');
+  const rightLabel = document.getElementById('converterRightLabel');
+  const reverseNote = document.getElementById('reverseNote');
+  const isC2m = (converterDirection === 'c2m');
+  if (c2mPanel) c2mPanel.style.display = isC2m ? '' : 'none';
+  if (m2cPanel) m2cPanel.style.display = isC2m ? 'none' : '';
+  if (leftLabel) leftLabel.textContent = isC2m ? 'Кирилл' : 'Монгол бичиг';
+  if (rightLabel) rightLabel.textContent = isC2m ? 'Монгол бичиг' : 'Кирилл';
+  if (reverseNote) reverseNote.style.display = isC2m ? 'none' : 'block';
+}
+function toggleConverterDirection(){
+  converterDirection = (converterDirection === 'c2m') ? 'm2c' : 'c2m';
+  applyConverterDirectionUI();
+}
+
 function convertText(){
   const src = document.getElementById('inputText').value;
   lastConverted = cyrillicToMongol(src);
   const box = document.getElementById('previewBox');
+  const quickBox = document.getElementById('quickMongolOutput');
   const stat = document.getElementById('dictStat');
   if (!lastConverted.trim()){
     box.innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
+    if (quickBox) quickBox.innerHTML = '<span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>';
     if (stat) stat.textContent = '';
     return;
   }
   renderPreview();
+  // Дээд хэсгийн шуурхай хөрвүүлэгчийн баруун талын хайрцагт (урьдчилан харах/бланкны
+  // давхарлалгүй, зөвхөн цэвэр текст) мөн адил үр дүнг харуулна — kimo-ийн шиг шуурхай
+  // хос хайрцагтай харагдацыг хангахын тулд.
+  if (quickBox) quickBox.innerHTML = '<div class="mongol-vertical" style="margin:0 auto;">' + renderMongolHtml(lastConverted) + '</div>';
   if (stat){
     const total = dictHits + dictMisses;
     stat.textContent = total ? ('Толь бичгээс шууд олдсон: ' + dictHits + ' / ' + total + ' үг') : '';
