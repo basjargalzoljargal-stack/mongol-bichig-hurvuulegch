@@ -95,6 +95,17 @@
     box-shadow:inset 0 1px 3px rgba(0,0,0,0.04);
     overflow-x:auto;
   }
+  /* "Classical Mongolian Dashtseden" фонт — Bolorsoft LLC (kimo хийсэн компани)-ийн alban
+     ёсны "Monbs Keyboard" суулгацын дотор орсон файл. Фонтын өөрийнх нь metadata-д:
+     "Bolorsoft free font. This font may be downloaded, distributed and used free of charge
+     for both personal and commercial use." гэж тодорхой бичсэн тул арилжааны хэрэглээнд ч
+     зөвшөөрөгдсөн — иймд веб дээр шууд суулгамал (embed) болгов (эрх зүйн эрсдэлгүй).
+     Лиценз: https://fonts.bolorsoft.com/license */
+  @font-face{
+    font-family:'Classical Mongolian Dashtseden';
+    src:url('cmdashitseden.ttf') format('truetype');
+    font-display:swap;
+  }
   .mongol-vertical{
     writing-mode: vertical-lr;
     -webkit-writing-mode: vertical-lr;
