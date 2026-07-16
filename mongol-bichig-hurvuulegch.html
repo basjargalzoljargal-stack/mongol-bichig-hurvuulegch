@@ -1596,15 +1596,31 @@ function autoFitVerticalField(el, minPx, minMm){
   if (!el) return;
   const raw = el.style.fontSize || '';
   const m = raw.match(/^([\d.]+)(px|mm|pt)$/);
-  if (!m) return;
-  let val = parseFloat(m[1]);
-  const unit = m[2];
-  const floor = (unit === 'mm') ? (minMm || 2.2) : (minPx || 9);
-  let guard = 0;
-  while (guard < 40 && val > floor && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)){
-    val = Math.max(floor, val * 0.92);
-    el.style.fontSize = val.toFixed(2) + unit;
-    guard++;
+  if (m){
+    let val = parseFloat(m[1]);
+    const unit = m[2];
+    const floor = (unit === 'mm') ? (minMm || 2.2) : (minPx || 9);
+    let guard = 0;
+    while (guard < 40 && val > floor && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)){
+      val = Math.max(floor, val * 0.92);
+      el.style.fontSize = val.toFixed(2) + unit;
+      guard++;
+    }
+  }
+  // АЛДАА ЗАСВАР (олон багана болоход зүүн тийш "гулсдаг" асуудал): дотоод (голлуулсан)
+  // блок анх "left:X%; transform:translateX(-X%)" аргаар байрласан байсан ба энэ трюк нь
+  // блокийн ӨӨРИЙН өргөнөөс шалтгаалж шилждэг — олон баганатай (урт текст wrap хийсэн)
+  // үед агуулга өргөссөнөөр шилжилт хэмжээ мөн томорч, хайрцгийн эхлэх байрнаас хэт зүүн
+  // тийш гулссан харагдаж байв. Үүнийг ХАЙРЦГИЙН (el) тогтмол өргөнөөс px-ээр тооцож
+  // засав — агуулгын өргөн өөрчлөгдсөн ч эхлэх цэг хайрцганд харьцангуй тогтвортой хэвээр
+  // үлдэнэ.
+  const inner = el.firstElementChild;
+  if (inner && inner.style.position === 'absolute'){
+    const leftMatch = (inner.style.left || '50%').match(/^([\d.]+)%$/);
+    const pct = leftMatch ? parseFloat(leftMatch[1]) : 50;
+    const leftPx = Math.max(0, Math.round((el.clientWidth - inner.scrollWidth) * (pct / 100)));
+    inner.style.left = leftPx + 'px';
+    inner.style.transform = 'translateY(-50%)';
   }
 }
 
@@ -1638,7 +1654,11 @@ function renderPreviewWithLetterheadImage(cfg, paperBase){
     const top = Math.round(fieldCfg.top * scaleY);
     const w = Math.round(fieldCfg.width * scaleX);
     const h = Math.round(fieldCfg.height * scaleY);
-    const fs = Math.max(13, Math.round(fieldCfg.fontSize * scaleAvg));
+    // АНХААР: өмнө нь 13px-ээс доош ХЭЗЭЭ Ч багасдаггүй байсан ("эхлэх" хэмжээ) тул богино
+    // хайрцгуудад (жиш: 90px өргөнтэй) 2 үгтэй гарчиг байнга олон багана шаардаж, улмаар
+    // autoFitVerticalField-д хэт их шахуулж байв. Одоо доод хязгаарыг 10px болгож багасгасан
+    // тул анхнаасаа илүү бодит харьцаатай эхэлж, автомат багасгалт бага хэрэгтэй болно.
+    const fs = Math.max(10, Math.round(fieldCfg.fontSize * scaleAvg));
     // Хэнд хандах / Тэргүүн зэрэг ЖИЖИГ хайрцгуудад бичвэрийг хайрцгийн яг ТӨВД
     // (зүүн дээд булан руу наалдуулахгүй, х/у 2 тэнхлэгээр голлуулж) харуулна —
     // ингэснээр хайрцгийн зүүн ирмэг рүү наалдаж харагдахгүй, харин бага зэрэг
