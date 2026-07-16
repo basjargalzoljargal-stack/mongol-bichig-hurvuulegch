@@ -1361,12 +1361,17 @@ function copyMongolRich(boxId, msgId){
     return;
   }
   const cs = getComputedStyle(mv);
+  // background:#fff — ЗААВАЛ тодорхой цайвар дэвсгэр тавьсан: үгүй бол Chrome-ийн
+  // execCommand('copy') хуулбар ХИЙХ орчны (page/parent) саарал/цайвар өнгийг
+  // дэвсгэрээр нь дагуулж авдаг нь тогтоогдсон (Word-т буулгахад бага зэрэг саарал
+  // хайрцаг харагдах шалтгаан). Тодорхой цагаан болгосноор энэ асуудал арилна.
   const inlineStyle = 'writing-mode:vertical-lr;-webkit-writing-mode:vertical-lr;' +
     'font-family:' + cs.fontFamily + ';' +
     'font-size:' + cs.fontSize + ';' +
     'letter-spacing:' + cs.letterSpacing + ';' +
     'line-height:' + cs.lineHeight + ';' +
-    'white-space:pre-wrap;color:' + cs.color + ';';
+    'white-space:pre-wrap;color:' + cs.color + ';' +
+    'background:#ffffff;background-color:#ffffff;box-shadow:none;border:none;margin:0;padding:0;';
   const html = '<div style="' + inlineStyle + '">' + mv.innerHTML + '</div>';
   const plain = mv.textContent || '';
   function finish(ok, err){
@@ -1390,6 +1395,12 @@ function copyMongolRich(boxId, msgId){
     tmp.setAttribute('contenteditable', 'true');
     tmp.style.position = 'fixed';
     tmp.style.left = '-9999px';
+    tmp.style.top = '0';
+    tmp.style.background = '#ffffff';
+    tmp.style.backgroundColor = '#ffffff';
+    tmp.style.boxShadow = 'none';
+    tmp.style.margin = '0';
+    tmp.style.padding = '0';
     tmp.innerHTML = html;
     document.body.appendChild(tmp);
     const range = document.createRange();
