@@ -98,7 +98,14 @@
   .mongol-vertical{
     writing-mode: vertical-lr;
     -webkit-writing-mode: vertical-lr;
-    font-family:'Mongolian Baiti',sans-serif;
+    /* KIMO хөрвүүлэгчийн ашигладаг яг тэр фонтын нэрийг эхэнд тавьсан ("Classical Mongolian
+       Dashtseden" — kimo.mngl.net-ийн /web/cmdashitseden.ttf файлаас нээж баталгаажуулсан).
+       Файлыг өөрсдөө ХУУЛААГҮЙ (эрх зүйн шалтгаанаар өөр компанийн сервэрээс шууд хуулж
+       байршуулах зохисгүй) — зөвхөн НЭРЭЭР нь дуудсан тул хэрэглэгчийн компьютерт энэ фонт
+       СУУЛГАСАН бол автоматаар яг kimo шиг харагдана; суулгаагүй бол Mongolian Baiti руу
+       буцна (өмнөх адил). Хэрэв БҮХ зочинд (фонт суулгаагүй ч) баталгаатай ижил харагдуулах
+       шаардлагатай бол зөвшөөрөлтэй (SIL OFL) "Noto Sans Mongolian" веб-фонтоор солих хэрэгтэй.*/
+    font-family:'Classical Mongolian Dashtseden','Mongolian Baiti',sans-serif;
     font-size:30px;
     letter-spacing:2px;
     line-height:1.7;
