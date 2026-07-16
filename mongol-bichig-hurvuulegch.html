@@ -323,6 +323,10 @@
           <div class="preview-box" id="quickMongolOutput">
             <span class="placeholder">Хөрвүүлсэн бичиг энд харагдана</span>
           </div>
+          <div class="row" style="margin-top:8px;">
+            <button type="button" class="secondary" onclick="copyMongolRich('quickMongolOutput','quickCopyMsg')">📋 Хуулах (фонттой)</button>
+            <span id="quickCopyMsg" style="font-size:12.5px;color:var(--muted);"></span>
+          </div>
         </div>
       </div>
 
@@ -1338,6 +1342,70 @@ function copyReverseOutput(){
   } catch(e){
     document.execCommand('copy');
   }
+}
+
+// ===== "Хуулах (фонттой)" — тодорхой rich-clipboard хуулбар =====
+// Санамж: ЭНГИЙН select+Ctrl-C нь vertical-writing-mode бичвэрт заримдаа Word-т
+// font-family-г зөв дамжуулдаггүй (браузерийн copy-serialize логикийн онцлогоос
+// шалтгаалж). Иймд энэ товч нь ТОДОРХОЙ inline style (font-family, хэмжээ, зай)
+// бүхий HTML-ийг Clipboard API-аар (text/html + text/plain 2 хэлбэрээр) шууд
+// clipboard-т бичдэг тул destination программ (Word гэх мэт) яг тэр фонтыг олж
+// ашиглах магадлал хамгийн өндөр байна. Clipboard API дэмжигдэхгүй эсвэл permission
+// татгалзсан тохиолдолд document.execCommand('copy') руу буцна.
+function copyMongolRich(boxId, msgId){
+  const box = document.getElementById(boxId);
+  const msgEl = msgId ? document.getElementById(msgId) : null;
+  const mv = box ? box.querySelector('.mongol-vertical') : null;
+  if (!mv){
+    if (msgEl){ msgEl.textContent = 'Эхлээд хөрвүүлнэ үү.'; msgEl.style.color = '#c0392b'; }
+    return;
+  }
+  const cs = getComputedStyle(mv);
+  const inlineStyle = 'writing-mode:vertical-lr;-webkit-writing-mode:vertical-lr;' +
+    'font-family:' + cs.fontFamily + ';' +
+    'font-size:' + cs.fontSize + ';' +
+    'letter-spacing:' + cs.letterSpacing + ';' +
+    'line-height:' + cs.lineHeight + ';' +
+    'white-space:pre-wrap;color:' + cs.color + ';';
+  const html = '<div style="' + inlineStyle + '">' + mv.innerHTML + '</div>';
+  const plain = mv.textContent || '';
+  function finish(ok, err){
+    if (msgEl){
+      msgEl.textContent = ok ? 'Хуулагдлаа ✓ (фонт хадгалагдана)' : ('Алдаа: ' + (err && err.message ? err.message : 'тодорхойгүй'));
+      msgEl.style.color = ok ? '#1f8a3d' : '#c0392b';
+      clearTimeout(msgEl._copyMsgTimer);
+      msgEl._copyMsgTimer = setTimeout(function(){ msgEl.textContent = ''; }, 4000);
+    }
+  }
+  function tryModernClipboard(){
+    if (!navigator.clipboard || !window.ClipboardItem) return Promise.reject(new Error('Clipboard API дэмжигдэхгүй'));
+    const item = new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([plain], { type: 'text/plain' })
+    });
+    return navigator.clipboard.write([item]);
+  }
+  function fallbackExecCommand(){
+    const tmp = document.createElement('div');
+    tmp.setAttribute('contenteditable', 'true');
+    tmp.style.position = 'fixed';
+    tmp.style.left = '-9999px';
+    tmp.innerHTML = html;
+    document.body.appendChild(tmp);
+    const range = document.createRange();
+    range.selectNodeContents(tmp);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    const ok = document.execCommand('copy');
+    sel.removeAllRanges();
+    document.body.removeChild(tmp);
+    if (!ok) throw new Error('execCommand(copy) амжилтгүй');
+  }
+  tryModernClipboard().then(function(){ finish(true); }).catch(function(){
+    try { fallbackExecCommand(); finish(true); }
+    catch(e2){ finish(false, e2); }
+  });
 }
 
 let lastConverted = '';
