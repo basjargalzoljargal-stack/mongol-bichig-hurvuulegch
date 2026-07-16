@@ -390,6 +390,32 @@
         🖶 "Шууд хэвлэх / PDF татах" товч нь Хянасан/Боловсруулсан/Хувь тэмдэглэлийг Word загваргүйгээр, шууд хуудасны зүүн доод буланд (захаас 15мм) хэвлэнэ. PDF болгож татахыг хүсвэл гарах хэвлэх цонхны "Destination" сонголтоос "Save as PDF" сонгоно уу.
       </div>
     </div>
+
+    <div class="card full">
+      <h2>5. Монгол бичиг → Кирилл (урвуу хөрвүүлэлт)</h2>
+      <p class="subtitle" style="margin:0 0 10px;">Монгол бичгийн текстээ (Юникод, ᠮᠣᠩᠭᠣᠯ ᠪᠢᠴᠢᠭ) доор буулгаад (paste хийгээд) "Хөрвүүлэх" дарна уу — Кирилл рүү хөрвүүлнэ.</p>
+      <div class="grid">
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Монгол бичиг (энд буулгана уу)</label>
+          <textarea id="reverseInput" placeholder="ᠮᠣᠩᠭᠣᠯ ᠤᠯᠤᠰ" style="min-height:160px;"></textarea>
+          <div class="row" style="margin-top:8px;">
+            <button onclick="convertReverseText()">Хөрвүүлэх →</button>
+            <button class="secondary" onclick="clearReverse()">Цэвэрлэх</button>
+          </div>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Кирилл (үр дүн)</label>
+          <textarea id="reverseOutput" readonly style="min-height:160px;"></textarea>
+          <div class="row" style="margin-top:8px;">
+            <button class="secondary" onclick="copyReverseOutput()">📋 Хуулах</button>
+          </div>
+          <div id="reverseStat" style="margin-top:4px;font-size:12.5px;color:var(--muted);"></div>
+        </div>
+      </div>
+      <div class="note">
+        ⚠️ Анхаар: Уламжлалт монгол бичиг зарим Кирилл үсгийг (ж/з, ц/ч, ш/щ, мөн и/й/ъ/ы/ь) ЯЛГАЖ БИЧДЭГГҮЙ тул толь бичигт ОЛДООГҮЙ үгсийг тэмдэгт-тэмдэгтээр урвуулахад эдгээр хос үсгийн зөвхөн нэг хувилбар (жиш: ц, ж, и) сонгогдоно. 100% үнэн зөв урвуу хөрвүүлэлт ЗӨВХӨН толь бичигт байгаа (танигдсан) үгсэд баталгаатай.
+      </div>
+    </div>
   </div>
 </div>
 </div><!-- /#appContent -->
@@ -965,6 +991,165 @@ function convertToken(tok){
 function cyrillicToMongol(text){
   dictHits = 0; dictMisses = 0;
   return text.split(/(\s+)/).map(tok => /^\s*$/.test(tok) ? tok : convertToken(tok)).join('');
+}
+
+// ========================================================================
+// УРВУУ ХӨРВҮҮЛЭЛТ: Монгол бичиг → Кирилл
+// ========================================================================
+// АНХААРАХ ЗҮЙЛС (энэ бол мэдэгдэж буй хязгаарлалт, алдаа биш):
+// 1. Уламжлалт монгол бичиг зарим Кирилл үсгийг ЯЛГАЖ БИЧДЭГГҮЙ (ж/з, ц/ч, ш/щ, мөн
+//    и/й/ъ/ы/ь бүгд ижил ᠢ тэмдэгтээр бичигдэнэ). Тиймээс ТОЛЬД БАЙХГҮЙ (танигдаагүй) үгийг
+//    тэмдэгт-тэмдэгтээр урвуулахад дээрх хос үсгийн зөвхөн НЭГ хувилбарыг л (жиш: ц, ж, и)
+//    сонгож гаргана — 100% баталгаатай урвуу хөрвүүлэлт ЗӨВХӨН толь бичигт байгаа
+//    (танигдсан) үгсэд хамаарна.
+// 2. Толь бичигт ЗАРИМ Монгол бичгийн хэлбэрт ХЭД ХЭДЭН өөр Кирилл үг тохирдог (ижил
+//    шалтгаанаар) — ийм үед хамгийн түрүүнд олдсон хувилбарыг барина.
+// 3. Эрхийн (харьяалах) залгавар (MVS+ᠤᠨ / MVS+ᠡᠶᠢᠨ)-ыг ерөнхий "-ын"/"-ийн" хэлбэрээр л
+//    сэргээнэ (эх бичвэрт өөр зөв бичгийн хувилбар — жиш "-гийн" — байсан байж болзошгүй).
+const MVS = '᠎'; // Mongolian Vowel Separator — язгуур ба залгаврыг холбодог үл харагдах тэмдэгт
+
+// Кирилл→Монгол толийг (DICT) урвуулж, Монгол бичиг→Кирилл хайлтын толь үүсгэнэ.
+// (mongol-dict-data.js, mongol-dict-extra.js бүгд ЭНЭ script ажиллахаас ӨМНӨ ачаалагдсан
+// байх ёстой тул DICT аль хэдийн бүрэн дүүрэн байна.)
+const REVERSE_DICT = {};
+if (typeof DICT !== 'undefined'){
+  for (const cyr in DICT){
+    const mon = DICT[cyr];
+    if (!(mon in REVERSE_DICT)) REVERSE_DICT[mon] = cyr; // зөрчилтэй бол ЭХНИЙ хувилбарыг барина
+  }
+}
+
+const REVERSE_CHAR_MAP = {
+  'ᠠ':'а','ᠪ':'б','ᠸ':'в','ᠭ':'г','ᠳ':'д','ᠵ':'ж','ᠢ':'и','ᠺ':'к','ᠯ':'л','ᠮ':'м',
+  'ᠨ':'н','ᠣ':'о','ᠥ':'ө','ᠫ':'п','ᠷ':'р','ᠰ':'с','ᠲ':'т','ᠤ':'у','ᠦ':'ү','ᠹ':'ф',
+  'ᠬ':'х','ᠴ':'ц','ᠱ':'ш','ᠡ':'э'
+};
+const REVERSE_YA_MAP = { 'ᠶᠡ':'е', 'ᠶᠣ':'ё', 'ᠶᠦ':'ю', 'ᠶᠠ':'я' };
+const REVERSE_MONGOL_DIGITS = { '᠐':'0','᠑':'1','᠒':'2','᠓':'3','᠔':'4','᠕':'5','᠖':'6','᠗':'7','᠘':'8','᠙':'9' };
+
+// Толь бичигт олдоогүй Монгол бичгийн блокийг тэмдэгт-тэмдэгтээр Кирилл рүү хөрвүүлнэ
+// (2 тэмдэгтийн ᠶ+эгшиг хослолыг эхэлж шалгаж, дараа нь ганц тэмдэгт/тоогоор үргэлжлүүлнэ).
+function charByCharReverse(word){
+  let out = '';
+  const chars = Array.from(word);
+  for (let i = 0; i < chars.length; i++){
+    const two = chars[i] + (chars[i+1] || '');
+    if (REVERSE_YA_MAP[two]){ out += REVERSE_YA_MAP[two]; i++; continue; }
+    if (REVERSE_MONGOL_DIGITS[chars[i]] !== undefined){ out += REVERSE_MONGOL_DIGITS[chars[i]]; continue; }
+    if (chars[i] === MVS) continue; // MVS үл харагдах тул урвуу бичвэрт орхино
+    out += REVERSE_CHAR_MAP[chars[i]] || chars[i];
+  }
+  return out;
+}
+
+let reverseDictHits = 0, reverseDictMisses = 0;
+
+function lookupOrCharByCharReverse(mon){
+  if (REVERSE_DICT[mon]){ reverseDictHits++; return REVERSE_DICT[mon]; }
+  reverseDictMisses++;
+  return charByCharReverse(mon);
+}
+
+// Эрхийн (харьяалах) залгаврын тусгай тохиолдол: MVS+ᠤᠨ / MVS+ᠡᠶᠢᠨ төгсгөлтэй блокийг
+// танина. Олдвол хөрвүүлсэн үр дүнг буцаана; үгүй бол null буцааж энгийн урсгалаар
+// боловсруулуулна.
+function convertMongolGenitiveChunk(bareChunk){
+  if (bareChunk.endsWith(MVS + 'ᠤᠨ') && bareChunk.length > 2){
+    return lookupOrCharByCharReverse(bareChunk.slice(0, -2)) + '-ын';
+  }
+  if (bareChunk.endsWith(MVS + 'ᠡᠶᠢᠨ') && bareChunk.length > 3){
+    return lookupOrCharByCharReverse(bareChunk.slice(0, -3)) + '-ийн';
+  }
+  return null;
+}
+
+// Монгол бичгийн блокийн (Юникодын Монгол блок 1800-18AF, мөн ердийн 0-9 тоо) эхэн/төгсгөлд
+// байгаа "үг бус" тэмдэгтүүдийг (цэг таслал, хаалт г.м) тусад нь ялгаж авна.
+const MONGOL_WORD_CHAR_RE = /[᠀-᢯0-9]/;
+function splitLeadTrail(chunk){
+  let start = 0, end = chunk.length;
+  while (start < end && !MONGOL_WORD_CHAR_RE.test(chunk[start])) start++;
+  while (end > start && !MONGOL_WORD_CHAR_RE.test(chunk[end - 1])) end--;
+  return { lead: chunk.slice(0, start), bare: chunk.slice(start, end), trail: chunk.slice(end) };
+}
+
+// Толь бичигт зарим Кирилл үг ХЭД ХЭДЭН зайгаар тусгаарлагдсан Монгол бичгийн "блок"-оор
+// (жиш нь "ааггүй" → "ᠠᠭᠠᠭ ᠦᠭᠡᠢ", 2 блок) илэрхийлэгддэг тул нэг мөр доtorx ЗАЙгаар
+// тусгаарлагдсан блокуудаас хамгийн УРТ (лавлагааны толинд яг таарах) хослолыг эхэлж хайна
+// (greedy longest-match).
+function mongolToCyrillicLine(line){
+  const rawChunks = line.split(/[ \t　]+/);
+  if (rawChunks.length === 1 && rawChunks[0] === '') return '';
+  const parts = rawChunks.map(splitLeadTrail);
+  const MAX_LOOKAHEAD = 5;
+  const outTokens = [];
+  let i = 0;
+  while (i < parts.length){
+    if (!parts[i].bare){
+      outTokens.push(parts[i].lead + parts[i].trail);
+      i++;
+      continue;
+    }
+    const genitive = convertMongolGenitiveChunk(parts[i].bare);
+    if (genitive !== null){
+      outTokens.push(parts[i].lead + genitive + parts[i].trail);
+      i++;
+      continue;
+    }
+    let matched = false;
+    for (let span = Math.min(MAX_LOOKAHEAD, parts.length - i); span >= 1; span--){
+      let ok = true;
+      for (let j = 1; j < span; j++){ if (parts[i + j].lead || parts[i + j].trail){ ok = false; break; } }
+      if (!ok) continue;
+      const candidate = parts.slice(i, i + span).map(p => p.bare).join(' ');
+      if (REVERSE_DICT[candidate]){
+        outTokens.push(parts[i].lead + REVERSE_DICT[candidate] + parts[i + span - 1].trail);
+        i += span;
+        matched = true;
+        reverseDictHits++;
+        break;
+      }
+    }
+    if (!matched){
+      outTokens.push(parts[i].lead + charByCharReverse(parts[i].bare) + parts[i].trail);
+      reverseDictMisses++;
+      i++;
+    }
+  }
+  return outTokens.join(' ');
+}
+
+function mongolToCyrillic(text){
+  reverseDictHits = 0; reverseDictMisses = 0;
+  return String(text).split('\n').map(mongolToCyrillicLine).join('\n');
+}
+
+function convertReverseText(){
+  const src = document.getElementById('reverseInput').value;
+  const result = mongolToCyrillic(src);
+  document.getElementById('reverseOutput').value = result;
+  const stat = document.getElementById('reverseStat');
+  if (stat){
+    const total = reverseDictHits + reverseDictMisses;
+    stat.textContent = total ? ('Толь бичгээс шууд олдсон: ' + reverseDictHits + ' / ' + total + ' блок') : '';
+  }
+}
+
+function clearReverse(){
+  document.getElementById('reverseInput').value = '';
+  document.getElementById('reverseOutput').value = '';
+  const stat = document.getElementById('reverseStat');
+  if (stat) stat.textContent = '';
+}
+
+function copyReverseOutput(){
+  const box = document.getElementById('reverseOutput');
+  box.select();
+  try {
+    navigator.clipboard.writeText(box.value);
+  } catch(e){
+    document.execCommand('copy');
+  }
 }
 
 let lastConverted = '';
