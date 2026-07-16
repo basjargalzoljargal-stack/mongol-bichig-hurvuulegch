@@ -383,7 +383,11 @@
       </div>
       <div class="row">
         <button onclick="downloadNoteDocx()">Тэмдэглэл хэвлэх (.docx)</button>
+        <button class="secondary" onclick="printNoteOnly()">🖶 Тэмдэглэл шууд хэвлэх / PDF татах</button>
         <span id="noteDocxStatus" style="margin-left:10px;font-size:12.5px;color:var(--muted);"></span>
+      </div>
+      <div class="note">
+        🖶 "Шууд хэвлэх / PDF татах" товч нь Хянасан/Боловсруулсан/Хувь тэмдэглэлийг Word загваргүйгээр, шууд хуудасны зүүн доод буланд (захаас 15мм) хэвлэнэ. PDF болгож татахыг хүсвэл гарах хэвлэх цонхны "Destination" сонголтоос "Save as PDF" сонгоно уу.
       </div>
     </div>
   </div>
@@ -1653,6 +1657,62 @@ async function downloadNoteDocx(){
     if (statusEl) statusEl.textContent = '';
     alert('Тэмдэглэл үүсгэхэд алдаа гарлаа: ' + e.message);
   }
+}
+
+// Хянасан/Боловсруулсан/Хувь тэмдэглэлийг ШУУД (Word загваргүйгээр) хэвлэх/PDF болгох.
+// downloadNoteDocx()-той АДИЛ дүрмээр (MNS 5140-2:2021: зүүн доод буланд, захаас 15мм тус
+// тус) байрлуулна: 3 нарийн (16мм) багана зүүн захаас эхлээд баруун тийш дараалж, тус
+// бүрийн бичвэр багана дотроо ДООД буланд (bottom:0) бэхлэгдэнэ.
+function printNoteOnly(){
+  const preparedRaw = document.getElementById('preparedBy').value.trim();
+  const checkedRaw = document.getElementById('checkedBy').value.trim();
+  const copyRaw = document.getElementById('copyNote').value.trim();
+  if (!preparedRaw && !checkedRaw && !copyRaw){
+    alert('Боловсруулсан, Хянасан, эсвэл Хувь талбарын дор нэгийг нь бөглөнө үү.');
+    return;
+  }
+  const paperKey = (document.getElementById('notePaperSize') || {}).value || 'A4';
+  const base = (typeof PAPER_CONFIG !== 'undefined' && PAPER_CONFIG[paperKey]) ? PAPER_CONFIG[paperKey] : { width:297, height:210 };
+  const marginMm = 15; // MNS 5140-2: зүүн болон доод захаас 15мм
+
+  const colWidthMm = 16;
+  const colHeightMm = base.height - marginMm * 2;
+  let colsHtml = '';
+  const rawCols = [];
+  if (copyRaw) rawCols.push({ label: 'Хувь: ' + copyRaw, name: '' });
+  if (preparedRaw) rawCols.push({ label: 'Боловсруулсан:', name: preparedRaw });
+  if (checkedRaw) rawCols.push({ label: 'Хянасан:', name: checkedRaw });
+  rawCols.forEach(function(col, i){
+    let html = mongolLine(col.label);
+    if (col.name) html += '<br><br><br>' + mongolLine(col.name);
+    colsHtml += '<div class="mongol-vertical" style="position:absolute;left:' + (marginMm + i * colWidthMm) +
+      'mm;bottom:' + marginMm + 'mm;width:' + colWidthMm + 'mm;max-height:' + colHeightMm +
+      'mm;font-size:4.5mm;letter-spacing:0.5mm;line-height:1.4;overflow:hidden;">' + html + '</div>';
+  });
+
+  let pageStyle = document.getElementById('printPageStyle');
+  if (!pageStyle){
+    pageStyle = document.createElement('style');
+    pageStyle.id = 'printPageStyle';
+    document.head.appendChild(pageStyle);
+  }
+  pageStyle.textContent = '@page{size:' + base.width + 'mm ' + base.height + 'mm;margin:0;}';
+
+  const area = document.getElementById('printOnlyArea');
+  area.style.width = base.width + 'mm';
+  area.style.height = base.height + 'mm';
+  area.innerHTML = colsHtml;
+
+  document.body.classList.add('printing-letterhead-only');
+  const cleanup = function(){
+    document.body.classList.remove('printing-letterhead-only');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(function(){
+    window.print();
+    setTimeout(cleanup, 2000);
+  }, 50);
 }
 
 // "Шууд хэвлэх" (зөвхөн бичвэр, бланкны зурагГҮЙ) — дэлгэцийн урьдчилан харагдацтай
