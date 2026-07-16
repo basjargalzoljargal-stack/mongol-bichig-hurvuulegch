@@ -117,6 +117,21 @@
     src:url('cmdashitseden.ttf') format('truetype');
     font-display:swap;
   }
+  /* U+180E (MVS - эгшиг тусгаарлагч, эрхийн залгаварт "᠎" гэж ашигладаг үл үзэгдэх тэмдэгт)-ийг
+     cmdashitseden.ttf файл дотор ХАРАГДАХ хайрцаг (tofu, "□!" маягийн) байдлаар буруу зурдаг нь
+     тогтоогдсон тул яг энэ нэг кодын цэгийг ГАНЦААР нь unicode-range-ээр өөр фонт руу чиглүүлж,
+     үл үзэгдэх (зөв) байдлаар харуулна. Mongolian Baiti (Windows-д стандарт) болон ердийн
+     sans-serif аль аль нь энэ тэмдэгтийг зөв (үл үзэгдэх) харуулдгийг тестээр баталгаажуулсан. */
+  @font-face{
+    font-family:'Classical Mongolian Dashtseden';
+    src:local('Mongolian Baiti'),local('Noto Sans Mongolian');
+    unicode-range:U+180E;
+  }
+  @font-face{
+    font-family:'Classical Mongolian Dashitseden';
+    src:local('Mongolian Baiti'),local('Noto Sans Mongolian');
+    unicode-range:U+180E;
+  }
   .mongol-vertical{
     writing-mode: vertical-lr;
     -webkit-writing-mode: vertical-lr;
